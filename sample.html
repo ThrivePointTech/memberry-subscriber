@@ -1,0 +1,3278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Memberry — Kumita sa tahimik na weekdays. Para sa laundry shops sa Metro Manila. ₱0 upfront, 8% lang kapag kumita ka." />
+  <title>Memberry — Kumita sa tahimik na weekdays.</title>
+
+  <meta property="og:title" content="Memberry — Kumita sa tahimik na weekdays." />
+  <meta property="og:description" content="Gawing monthly members ang loyal mong suki. ₱0 upfront, 8% lang kapag kumita ka." />
+  <meta property="og:type" content="website" />
+
+  <style>
+    /* ============================================================
+       MEMBERRY DESIGN SYSTEM — laundry edition v2
+       ============================================================ */
+    :root {
+      --deep-green: #142F2D;
+      --deep-green-light: #1A3D3A;
+      --brand-teal: #35736E;
+      --teal-soft: #4A8B85;
+      --gold: #C5A55A;
+      --gold-bright: #C9A84C;
+      --gold-soft: #DEC587;
+      --gold-pale: #F0E5C8;
+      --off-white: #F5F8F7;
+      --white: #FFFFFF;
+      --black: #0A1716;
+      --text-dark: #142F2D;
+      --text-muted: #5A6B69;
+      --text-light: #E8EFEE;
+      --border-light: #E0E6E5;
+      --shadow-card: 0 4px 24px rgba(20, 47, 45, 0.08);
+      --shadow-soft: 0 2px 12px rgba(20, 47, 45, 0.04);
+      --shadow-feature: 0 16px 48px rgba(20, 47, 45, 0.12);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--text-dark);
+      background: var(--white);
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, .display {
+      font-family: "Trebuchet MS", "Lucida Sans", sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .italic-subtitle, blockquote, .serif-italic {
+      font-family: Georgia, "Times New Roman", serif;
+      font-style: italic;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    @media (min-width: 768px) {
+      .container { padding: 0 40px; }
+    }
+
+    section { padding: 80px 0; }
+
+    @media (min-width: 768px) {
+      section { padding: 120px 0; }
+    }
+
+    .accent-bar {
+      display: inline-block;
+      width: 48px;
+      height: 4px;
+      background: var(--gold);
+      margin-bottom: 24px;
+    }
+
+    .section-eyebrow {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--gold-bright);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 36px;
+      margin-bottom: 20px;
+      max-width: 800px;
+    }
+
+    @media (min-width: 768px) {
+      .section-title { font-size: 48px; }
+    }
+
+    .section-subtitle {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 19px;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin-bottom: 56px;
+      line-height: 1.55;
+    }
+
+    /* ============================================================
+       NAVIGATION
+       ============================================================ */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(20, 47, 45, 0.96);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100;
+      border-bottom: 1px solid rgba(197, 165, 90, 0.15);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    @media (min-width: 768px) {
+      .nav-inner { padding: 18px 40px; }
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--white);
+      text-decoration: none;
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .nav-logo-mark {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--deep-green);
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    .nav-links {
+      display: none;
+      gap: 32px;
+      align-items: center;
+    }
+
+    @media (min-width: 1024px) {
+      .nav-links { display: flex; }
+    }
+
+    .nav-links a {
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--gold); }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--gold);
+      color: var(--deep-green);
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: var(--gold-bright);
+      transform: translateY(-1px);
+    }
+
+    .nav-cta svg { width: 16px; height: 16px; }
+
+    /* ============================================================
+       HERO
+       ============================================================ */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      background: var(--deep-green);
+      color: var(--white);
+      padding: 120px 0 80px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(ellipse at 15% 30%, rgba(53, 115, 110, 0.45) 0%, transparent 60%),
+        radial-gradient(ellipse at 85% 70%, rgba(197, 165, 90, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    @media (min-width: 768px) {
+      .hero-content { padding: 0 40px; }
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--gold);
+      margin-bottom: 32px;
+    }
+
+    .hero-eyebrow::before {
+      content: "";
+      width: 32px;
+      height: 2px;
+      background: var(--gold);
+    }
+
+    .hero h1 {
+      font-size: 44px;
+      max-width: 900px;
+      margin-bottom: 24px;
+      line-height: 1.05;
+    }
+
+    @media (min-width: 768px) {
+      .hero h1 { font-size: 76px; }
+    }
+
+    @media (min-width: 1024px) {
+      .hero h1 { font-size: 92px; }
+    }
+
+    .hero-h2 {
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      line-height: 1.3;
+      color: var(--white);
+      max-width: 720px;
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    @media (min-width: 768px) { .hero-h2 { font-size: 30px; } }
+
+    .hero-h3 {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 18px;
+      max-width: 720px;
+      margin-bottom: 40px;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+
+    @media (min-width: 768px) { .hero-h3 { font-size: 21px; } }
+
+    .section-h2-bold {
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      line-height: 1.35;
+      color: var(--deep-green);
+      max-width: 800px;
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    @media (min-width: 768px) { .section-h2-bold { font-size: 26px; } }
+
+    .reframe-footnote {
+      margin-top: 12px;
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 12px;
+      color: rgba(90, 107, 105, 0.75);
+      line-height: 1.5;
+    }
+
+    .offer-inclusions-label {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--gold);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(197, 165, 90, 0.3);
+    }
+
+    .offer-bullet-icon {
+      flex-shrink: 0;
+      font-weight: 700;
+      font-size: 16px;
+      margin-top: 2px;
+      width: 18px;
+    }
+
+    .deal-card.deal-pay .offer-bullet-icon { color: var(--gold); }
+    .deal-card.deal-dont .offer-bullet-icon { color: var(--text-muted); }
+
+    .offer-bullet-content { flex: 1; }
+
+    .offer-bullet-title {
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .deal-card.deal-pay .offer-bullet-title { color: var(--white); }
+    .deal-card.deal-dont .offer-bullet-title { color: var(--deep-green); }
+
+    .offer-bullet-desc {
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .deal-card.deal-pay .offer-bullet-desc { color: rgba(232, 239, 238, 0.85); }
+    .deal-card.deal-dont .offer-bullet-desc { color: var(--text-muted); }
+
+    .hero-trust-strip {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 24px;
+      background: rgba(197, 165, 90, 0.12);
+      border: 1px solid rgba(197, 165, 90, 0.4);
+      border-radius: 6px;
+      margin-bottom: 40px;
+      font-size: 15px;
+      color: var(--gold-soft);
+      font-weight: 500;
+      max-width: 720px;
+    }
+
+    .hero-trust-strip strong {
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .hero-trust-strip svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .hero-ctas {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    @media (min-width: 480px) {
+      .hero-ctas { flex-direction: row; flex-wrap: wrap; }
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 18px 32px;
+      background: var(--gold);
+      color: var(--deep-green);
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 17px;
+      transition: all 0.2s;
+      min-height: 56px;
+      letter-spacing: -0.01em;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(197, 165, 90, 0.3);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 18px 32px;
+      background: transparent;
+      color: var(--white);
+      border: 2px solid var(--white);
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 17px;
+      transition: all 0.2s;
+      min-height: 56px;
+    }
+
+    .btn-secondary:hover {
+      background: var(--white);
+      color: var(--deep-green);
+    }
+
+    .hero-handoff-line {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 15px;
+      color: rgba(232, 239, 238, 0.7);
+    }
+
+    .hero-handoff-line strong {
+      color: var(--gold-soft);
+      font-style: normal;
+      font-family: "Segoe UI", sans-serif;
+      font-weight: 600;
+    }
+
+    /* ============================================================
+       SECTION — REFRAME
+       ============================================================ */
+    .section-reframe { background: var(--off-white); }
+
+    .reframe-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    @media (min-width: 768px) {
+      .reframe-grid { grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    }
+
+    .reframe-card {
+      background: var(--white);
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 36px 28px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .reframe-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card);
+      border-color: var(--gold-soft);
+    }
+
+    .reframe-card-number {
+      position: absolute;
+      top: 24px;
+      right: 28px;
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold-bright);
+      letter-spacing: 0.1em;
+    }
+
+    .reframe-state {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 16px 0;
+    }
+
+    .reframe-state-label {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+    }
+
+    .reframe-state-value {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1.25;
+    }
+
+    .reframe-state.after .reframe-state-label {
+      color: var(--gold-bright);
+    }
+
+    .reframe-state.after .reframe-state-value {
+      color: var(--deep-green);
+    }
+
+    .reframe-arrow {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+      position: relative;
+      margin: 8px 0;
+    }
+
+    .reframe-arrow::after {
+      content: "↓";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--white);
+      padding: 0 12px;
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .reframe-tagline {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-light);
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .reframe-closer {
+      margin-top: 56px;
+      padding: 28px 32px;
+      background: var(--deep-green);
+      color: var(--white);
+      border-radius: 12px;
+      max-width: 720px;
+    }
+
+    .reframe-closer p {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 20px;
+      line-height: 1.5;
+    }
+
+    .reframe-closer strong {
+      color: var(--gold);
+      font-style: normal;
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+    }
+
+    /* ============================================================
+       SECTION — THE DEAL
+       ============================================================ */
+    .section-deal { background: var(--white); }
+
+    .deal-lead {
+      max-width: 800px;
+      font-size: 19px;
+      color: var(--text-dark);
+      margin-bottom: 56px;
+      line-height: 1.55;
+    }
+
+    .deal-lead strong {
+      color: var(--deep-green);
+      font-weight: 700;
+    }
+
+    .deal-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    @media (min-width: 768px) {
+      .deal-grid { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+    }
+
+    .deal-card {
+      background: var(--off-white);
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 40px 32px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .deal-card.deal-pay {
+      background: linear-gradient(135deg, var(--deep-green) 0%, var(--deep-green-light) 100%);
+      color: var(--white);
+      border: none;
+    }
+
+    .deal-card.deal-pay::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gold);
+    }
+
+    .deal-card-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: rgba(197, 165, 90, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      color: var(--gold);
+    }
+
+    .deal-card.deal-dont .deal-card-icon {
+      background: rgba(20, 47, 45, 0.06);
+      color: var(--deep-green);
+    }
+
+    .deal-card h3 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .deal-card.deal-pay h3 { color: var(--white); }
+    .deal-card.deal-dont h3 { color: var(--deep-green); }
+
+    .deal-card-tagline {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 16px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .deal-card.deal-pay .deal-card-tagline { color: var(--gold-soft); }
+    .deal-card.deal-dont .deal-card-tagline { color: var(--text-muted); }
+
+    .deal-card ul { list-style: none; }
+
+    .deal-card li {
+      padding: 14px 0;
+      font-size: 15px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      border-bottom: 1px solid;
+      line-height: 1.5;
+    }
+
+    .deal-card.deal-pay li {
+      border-color: rgba(197, 165, 90, 0.15);
+      color: var(--text-light);
+    }
+
+    .deal-card.deal-dont li {
+      border-color: var(--border-light);
+      color: var(--text-dark);
+    }
+
+    .deal-card li:last-child { border-bottom: none; }
+
+    .deal-closer {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px;
+      border-top: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .deal-closer p {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 22px;
+      line-height: 1.4;
+      color: var(--text-dark);
+    }
+
+    .deal-closer strong {
+      color: var(--gold-bright);
+      font-weight: 700;
+      font-style: normal;
+      font-family: "Trebuchet MS", sans-serif;
+    }
+
+    /* ============================================================
+       SECTION — MERCHANT LAUNCH KIT
+       ============================================================ */
+    .section-kit {
+      background: var(--off-white);
+      padding: 80px 0;
+    }
+
+    @media (min-width: 768px) {
+      .section-kit { padding: 120px 0; }
+    }
+
+    .kit-feature {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      align-items: center;
+      padding: 64px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .kit-feature:last-child { border-bottom: none; }
+
+    @media (min-width: 1024px) {
+      .kit-feature {
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+      }
+
+      .kit-feature.reverse > .kit-visual { order: 2; }
+      .kit-feature.reverse > .kit-text { order: 1; }
+    }
+
+    .kit-text-eyebrow {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: var(--gold-bright);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .kit-text h3 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      color: var(--deep-green);
+    }
+
+    @media (min-width: 768px) {
+      .kit-text h3 { font-size: 40px; }
+    }
+
+    .kit-text p {
+      font-size: 17px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+
+    .kit-text-detail {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--brand-teal);
+      padding: 10px 16px;
+      background: rgba(53, 115, 110, 0.08);
+      border-radius: 6px;
+      width: fit-content;
+    }
+
+    .kit-text-detail svg { width: 16px; height: 16px; }
+
+    /* === Visual mockups === */
+    .kit-visual {
+      position: relative;
+      min-height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1200px;
+    }
+
+    /* Mockup 1: Poster + QR */
+    .mockup-poster {
+      width: 280px;
+      height: 380px;
+      background: linear-gradient(180deg, var(--deep-green) 0%, var(--deep-green-light) 100%);
+      border-radius: 12px;
+      box-shadow: var(--shadow-feature);
+      padding: 32px 24px;
+      transform: rotate(-3deg);
+      position: relative;
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .mockup-poster::before {
+      content: "";
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      border: 1px solid rgba(197, 165, 90, 0.3);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .mockup-poster-brand {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .mockup-poster-headline {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+
+    .mockup-poster-headline span { color: var(--gold); }
+
+    .mockup-qr {
+      width: 140px;
+      height: 140px;
+      background: var(--white);
+      padding: 12px;
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 2px;
+      margin-bottom: 20px;
+    }
+
+    .mockup-qr-cell {
+      background: var(--deep-green);
+      border-radius: 1px;
+    }
+
+    .mockup-qr-cell.empty { background: transparent; }
+
+    .mockup-poster-cta {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .mockup-poster-shadow {
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 220px;
+      height: 24px;
+      background: radial-gradient(ellipse, rgba(20, 47, 45, 0.18) 0%, transparent 70%);
+      filter: blur(8px);
+    }
+
+    /* Mockup 2: Phone with customer app */
+    .mockup-phone {
+      width: 264px;
+      height: 540px;
+      background: #0F0F0F;
+      border-radius: 36px;
+      padding: 12px;
+      box-shadow: var(--shadow-feature);
+      position: relative;
+    }
+
+    .mockup-phone::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 22px;
+      background: #0F0F0F;
+      border-radius: 12px;
+      z-index: 2;
+    }
+
+    .mockup-phone-screen {
+      background: var(--off-white);
+      border-radius: 26px;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mockup-phone-status {
+      padding: 12px 24px 4px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--deep-green);
+    }
+
+    .mockup-phone-header {
+      padding: 24px 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .mockup-phone-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%);
+      border-radius: 7px;
+      color: var(--deep-green);
+      font-weight: 900;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Trebuchet MS", sans-serif;
+    }
+
+    .mockup-phone-title {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--deep-green);
+    }
+
+    .mockup-phone-content {
+      padding: 20px;
+      flex: 1;
+    }
+
+    .mockup-phone-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+      margin-bottom: 8px;
+      font-family: "Trebuchet MS", sans-serif;
+    }
+
+    .mockup-phone-plan-name {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--deep-green);
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    .mockup-phone-plan-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .mockup-phone-price {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: var(--white);
+      border-radius: 10px;
+      border: 1px solid var(--border-light);
+    }
+
+    .mockup-phone-price-amount {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--deep-green);
+    }
+
+    .mockup-phone-price-period {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .mockup-phone-features {
+      list-style: none;
+      margin-bottom: 24px;
+    }
+
+    .mockup-phone-features li {
+      padding: 8px 0;
+      font-size: 12px;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mockup-phone-features li::before {
+      content: "✓";
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .mockup-phone-cta {
+      width: 100%;
+      padding: 14px;
+      background: var(--gold);
+      color: var(--deep-green);
+      border-radius: 8px;
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    /* Mockup 3: Merchant Dashboard */
+    .mockup-dashboard {
+      width: 100%;
+      max-width: 480px;
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: var(--shadow-feature);
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+    }
+
+    .mockup-dashboard-bar {
+      padding: 12px 16px;
+      background: var(--off-white);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .mockup-dashboard-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .mockup-dashboard-dot.r { background: #FF5F56; }
+    .mockup-dashboard-dot.y { background: #FFBD2E; }
+    .mockup-dashboard-dot.g { background: #27C93F; }
+
+    .mockup-dashboard-url {
+      margin-left: 16px;
+      padding: 4px 12px;
+      background: var(--white);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+      flex: 1;
+    }
+
+    .mockup-dashboard-content {
+      padding: 24px;
+    }
+
+    .mockup-dashboard-title {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--deep-green);
+      margin-bottom: 4px;
+    }
+
+    .mockup-dashboard-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .mockup-dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .mockup-stat-card {
+      padding: 14px;
+      background: var(--off-white);
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
+    }
+
+    .mockup-stat-card.highlight {
+      background: linear-gradient(135deg, var(--deep-green) 0%, var(--deep-green-light) 100%);
+      border-color: var(--deep-green);
+    }
+
+    .mockup-stat-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-family: "Trebuchet MS", sans-serif;
+    }
+
+    .mockup-stat-card.highlight .mockup-stat-label { color: var(--gold); }
+
+    .mockup-stat-value {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--deep-green);
+    }
+
+    .mockup-stat-card.highlight .mockup-stat-value { color: var(--white); }
+
+    .mockup-dashboard-chart {
+      height: 80px;
+      background: linear-gradient(180deg, rgba(53, 115, 110, 0.04) 0%, rgba(53, 115, 110, 0.01) 100%);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mockup-chart-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background: linear-gradient(180deg, transparent 0%, rgba(197, 165, 90, 0.15) 100%);
+      clip-path: polygon(0% 80%, 12% 65%, 24% 70%, 36% 50%, 48% 55%, 60% 35%, 72% 40%, 84% 20%, 100% 25%, 100% 100%, 0% 100%);
+    }
+
+    .mockup-dashboard-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mockup-list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--off-white);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .mockup-list-name {
+      font-weight: 600;
+      color: var(--deep-green);
+    }
+
+    .mockup-list-amount {
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+      color: var(--gold-bright);
+    }
+
+    /* Mockup 4: Payment + Bank Deposit */
+    .mockup-billing {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .mockup-payment-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mockup-payment-card {
+      flex: 1;
+      min-width: 100px;
+      padding: 14px 16px;
+      background: var(--white);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .mockup-payment-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 900;
+      font-size: 11px;
+      color: var(--white);
+      flex-shrink: 0;
+    }
+
+    .mockup-payment-icon.cards { background: linear-gradient(135deg, #1A1F71 0%, #2566B0 100%); }
+    .mockup-payment-icon.maya { background: linear-gradient(135deg, #00C853 0%, #5CDB5F 100%); }
+    .mockup-payment-icon.gcash { background: linear-gradient(135deg, #007BFF 0%, #5DADE2 100%); }
+
+    .mockup-payment-label {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--deep-green);
+    }
+
+    .mockup-deposit {
+      padding: 24px;
+      background: linear-gradient(135deg, var(--deep-green) 0%, var(--deep-green-light) 100%);
+      border-radius: 12px;
+      color: var(--white);
+      box-shadow: var(--shadow-feature);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mockup-deposit::before {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(197, 165, 90, 0.2) 0%, transparent 70%);
+    }
+
+    .mockup-deposit-eyebrow {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .mockup-deposit-amount {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+      position: relative;
+    }
+
+    .mockup-deposit-meta {
+      font-size: 13px;
+      color: var(--text-light);
+      position: relative;
+    }
+
+    .mockup-deposit-meta strong {
+      color: var(--gold-soft);
+      font-weight: 600;
+    }
+
+    /* Mockup 5: Training kit (stacked papers) */
+    .mockup-training {
+      position: relative;
+      width: 100%;
+      max-width: 380px;
+      height: 360px;
+    }
+
+    .mockup-paper {
+      position: absolute;
+      width: 280px;
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: var(--shadow-feature);
+      padding: 24px;
+      border: 1px solid var(--border-light);
+    }
+
+    .mockup-paper-1 {
+      top: 0;
+      left: 0;
+      transform: rotate(-4deg);
+      background: var(--off-white);
+    }
+
+    .mockup-paper-2 {
+      top: 30px;
+      left: 50px;
+      transform: rotate(3deg);
+      background: var(--white);
+    }
+
+    .mockup-paper-3 {
+      top: 60px;
+      left: 25px;
+      background: var(--white);
+      z-index: 2;
+      border-color: var(--gold-soft);
+      border-width: 2px;
+    }
+
+    .mockup-paper-eyebrow {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+      margin-bottom: 8px;
+    }
+
+    .mockup-paper-title {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--deep-green);
+      margin-bottom: 14px;
+      line-height: 1.2;
+    }
+
+    .mockup-paper-script {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 12px;
+      color: var(--text-dark);
+      line-height: 1.55;
+      margin-bottom: 12px;
+      padding: 10px;
+      background: rgba(197, 165, 90, 0.06);
+      border-left: 2px solid var(--gold);
+      border-radius: 4px;
+    }
+
+    .mockup-paper-bullet {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 4px 0;
+    }
+
+    .mockup-paper-bullet::before {
+      content: "•";
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .mockup-paper-incentive {
+      margin-top: 12px;
+      padding: 10px;
+      background: var(--deep-green);
+      color: var(--gold);
+      border-radius: 6px;
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* ============================================================
+       SECTION — MATH
+       ============================================================ */
+    .section-math {
+      background: var(--deep-green);
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section-math::before {
+      content: "";
+      position: absolute;
+      top: -200px;
+      left: -200px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(53, 115, 110, 0.4) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .section-math .container { position: relative; z-index: 1; }
+    .section-math .section-title { color: var(--white); }
+    .section-math .section-h2-bold { color: var(--white); }
+    .section-math .section-subtitle { color: rgba(232, 239, 238, 0.85); }
+
+    .math-table {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(197, 165, 90, 0.2);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .math-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(197, 165, 90, 0.15);
+      align-items: center;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .math-row { padding: 24px 40px; }
+    }
+
+    .math-row:last-child { border-bottom: none; }
+
+    .math-row-header {
+      background: rgba(197, 165, 90, 0.08);
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+    }
+
+    .math-cell { font-size: 16px; }
+
+    @media (min-width: 768px) {
+      .math-cell { font-size: 19px; }
+    }
+
+    .math-cell.amount {
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+    }
+
+    .math-cell.net {
+      color: var(--gold);
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    @media (min-width: 768px) {
+      .math-cell.net { font-size: 22px; }
+    }
+
+    .math-disclaimer {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 14px;
+      color: rgba(232, 239, 238, 0.6);
+      margin-bottom: 24px;
+    }
+
+    .math-note {
+      font-size: 16px;
+      color: var(--text-light);
+      line-height: 1.65;
+      margin-bottom: 24px;
+      max-width: 700px;
+    }
+
+    .math-closer {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 19px;
+      color: var(--gold-soft);
+      padding-top: 24px;
+      border-top: 1px solid rgba(197, 165, 90, 0.2);
+      max-width: 700px;
+      line-height: 1.55;
+    }
+
+    /* ============================================================
+       SECTION — HOW IT WORKS
+       ============================================================ */
+    .section-how { background: var(--white); }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      margin-bottom: 56px;
+    }
+
+    @media (min-width: 768px) {
+      .how-grid { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    }
+
+    .how-step { position: relative; }
+
+    .how-step-number {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 64px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 20px;
+      letter-spacing: -0.04em;
+    }
+
+    .how-step h3 {
+      font-size: 22px;
+      margin-bottom: 12px;
+      color: var(--deep-green);
+    }
+
+    .how-step p {
+      color: var(--text-muted);
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .how-step .example {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 14px;
+      color: var(--brand-teal);
+      padding-left: 12px;
+      border-left: 2px solid var(--gold);
+    }
+
+    .how-screenshot {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: linear-gradient(135deg, var(--off-white) 0%, #E5EDEB 100%);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .how-screenshot-chrome {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .how-screenshot-chrome span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(20, 47, 45, 0.15);
+    }
+
+    .how-screenshot-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .how-screenshot-label {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--gold-bright);
+    }
+
+    .how-screenshot-display {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--deep-green);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .how-screenshot-display.gold {
+      color: var(--gold-bright);
+      font-size: 26px;
+    }
+
+    .how-screenshot-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: Georgia, serif;
+      font-style: italic;
+      text-align: center;
+    }
+
+    .how-quote {
+      max-width: 720px;
+      padding: 32px 32px 32px 36px;
+      background: var(--off-white);
+      border-radius: 12px;
+      border-left: 4px solid var(--gold);
+    }
+
+    .how-quote blockquote {
+      font-size: 22px;
+      color: var(--deep-green);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .how-quote cite {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-style: normal;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* ============================================================
+       SECTION — TEAM
+       ============================================================ */
+    .section-team { background: var(--off-white); }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    @media (min-width: 768px) {
+      .team-grid { grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    }
+
+    .team-card {
+      background: var(--white);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.3s;
+    }
+
+    .team-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card);
+    }
+
+    .team-photo {
+      aspect-ratio: 1 / 1;
+      background: linear-gradient(135deg, var(--brand-teal) 0%, var(--deep-green) 100%);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .team-photo::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gold);
+    }
+
+    .team-initials {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 84px;
+      font-weight: 700;
+      color: rgba(197, 165, 90, 0.45);
+      letter-spacing: -0.02em;
+    }
+
+    .team-info { padding: 28px; }
+
+    .team-role {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-bright);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+
+    .team-name {
+      font-size: 22px;
+      color: var(--deep-green);
+      margin-bottom: 14px;
+    }
+
+    .team-bio {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .team-linkedin {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--brand-teal);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .team-linkedin:hover { color: var(--deep-green); }
+
+    .team-credentials {
+      padding: 24px 32px;
+      background: var(--white);
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .team-credentials strong {
+      color: var(--deep-green);
+      font-weight: 600;
+    }
+
+    /* ============================================================
+       SECTION — FIRST MERCHANTS
+       ============================================================ */
+    .section-merchants { background: var(--white); }
+
+    .merchants-honest-card {
+      background: linear-gradient(135deg, var(--deep-green) 0%, var(--deep-green-light) 100%);
+      color: var(--white);
+      padding: 56px 40px;
+      border-radius: 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .merchants-honest-card::before {
+      content: "";
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(197, 165, 90, 0.18) 0%, transparent 70%);
+    }
+
+    .merchants-honest-card::after {
+      content: "";
+      position: absolute;
+      bottom: -120px;
+      left: -120px;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(53, 115, 110, 0.4) 0%, transparent 70%);
+    }
+
+    .merchants-eyebrow {
+      display: inline-block;
+      padding: 6px 14px;
+      background: rgba(197, 165, 90, 0.15);
+      border: 1px solid rgba(197, 165, 90, 0.3);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .merchants-honest-card h3 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      color: var(--white);
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (min-width: 768px) {
+      .merchants-honest-card h3 { font-size: 40px; }
+    }
+
+    .merchants-honest-card p {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 19px;
+      color: var(--text-light);
+      max-width: 580px;
+      margin: 0 auto 32px;
+      position: relative;
+      z-index: 1;
+      line-height: 1.5;
+    }
+
+    .merchants-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 28px;
+      background: var(--gold);
+      color: var(--deep-green);
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 16px;
+      transition: all 0.2s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .merchants-cta:hover {
+      background: var(--gold-bright);
+      transform: translateY(-1px);
+    }
+
+    /* ============================================================
+       SECTION — FAQ
+       ============================================================ */
+    .section-faq { background: var(--off-white); }
+
+    .faq-categories {
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .faq-category-title {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--gold-bright);
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--gold);
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+
+    .faq-item {
+      background: var(--white);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .faq-item.open {
+      border-color: var(--gold);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .faq-question {
+      width: 100%;
+      padding: 20px 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--deep-green);
+      transition: all 0.2s;
+    }
+
+    .faq-question:hover { background: rgba(197, 165, 90, 0.04); }
+
+    .faq-toggle {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--off-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      color: var(--gold-bright);
+    }
+
+    .faq-item.open .faq-toggle {
+      background: var(--gold);
+      color: var(--deep-green);
+      transform: rotate(45deg);
+    }
+
+    .faq-toggle svg { width: 14px; height: 14px; }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 500px;
+      padding: 0 24px 24px;
+    }
+
+    .faq-answer p {
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ============================================================
+       SECTION — CLOSING CTA
+       ============================================================ */
+    .section-cta {
+      background: var(--deep-green);
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section-cta::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(ellipse at 70% 20%, rgba(53, 115, 110, 0.3) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 80%, rgba(197, 165, 90, 0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .section-cta .container { position: relative; z-index: 2; }
+    .section-cta .section-title { color: var(--white); }
+    .section-cta .section-subtitle { color: var(--text-light); }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    @media (min-width: 768px) {
+      .contact-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    }
+
+    .contact-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 28px 24px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(197, 165, 90, 0.25);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--white);
+      transition: all 0.3s;
+      min-height: 140px;
+    }
+
+    .contact-card:hover {
+      background: rgba(197, 165, 90, 0.08);
+      border-color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    .contact-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(197, 165, 90, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .contact-label {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gold-soft);
+      margin-bottom: 4px;
+    }
+
+    .contact-value {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .contact-form {
+      max-width: 600px;
+      padding: 32px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(197, 165, 90, 0.2);
+      border-radius: 12px;
+    }
+
+    .contact-form-title {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 17px;
+      color: var(--text-light);
+      margin-bottom: 20px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold-soft);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(197, 165, 90, 0.2);
+      border-radius: 6px;
+      color: var(--white);
+      font-size: 16px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .form-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--gold);
+      color: var(--deep-green);
+      border: none;
+      border-radius: 8px;
+      font-family: "Trebuchet MS", sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+
+    .form-submit:hover {
+      background: var(--gold-bright);
+      transform: translateY(-1px);
+    }
+
+    .contact-promise {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 14px;
+      color: rgba(232, 239, 238, 0.7);
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+
+    .contact-promise strong {
+      color: var(--gold-soft);
+      font-style: normal;
+      font-family: "Segoe UI", sans-serif;
+      font-weight: 600;
+    }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    footer {
+      background: var(--black);
+      color: var(--text-light);
+      padding: 64px 0 32px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      margin-bottom: 48px;
+    }
+
+    @media (min-width: 768px) {
+      .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+    }
+
+    .footer-brand-tagline {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 16px;
+      color: rgba(232, 239, 238, 0.7);
+      max-width: 320px;
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+
+    .footer-col h4 {
+      font-family: "Trebuchet MS", sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 12px; }
+
+    .footer-col a {
+      color: rgba(232, 239, 238, 0.75);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover { color: var(--gold); }
+
+    .footer-bottom {
+      padding-top: 32px;
+      border-top: 1px solid rgba(197, 165, 90, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 13px;
+      color: rgba(232, 239, 238, 0.5);
+    }
+
+    @media (min-width: 768px) {
+      .footer-bottom {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+
+    .footer-registration {
+      font-family: "Trebuchet MS", sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    /* Utilities */
+    .icon { width: 20px; height: 20px; flex-shrink: 0; }
+    .icon-sm { width: 16px; height: 16px; }
+    .icon-lg { width: 28px; height: 28px; }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--gold);
+      color: var(--deep-green);
+      padding: 8px 16px;
+      text-decoration: none;
+      z-index: 200;
+    }
+
+    .skip-link:focus { top: 0; }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <!-- ============================================================
+       NAVIGATION
+       ============================================================ -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <span class="nav-logo-mark">M</span>
+        Memberry
+      </a>
+
+      <div class="nav-links">
+        <a href="#reframe">Para sa Suki</a>
+        <a href="#offer">Ang Offer</a>
+        <a href="#kit">Launch Kit</a>
+        <a href="#math">Numbers</a>
+        <a href="#team">Meet the Team</a>
+        <a href="#faq">FAQ</a>
+      </div>
+
+      <a href="tel:+639561608383" class="nav-cta">
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        Tawagan Kami
+      </a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- ============================================================
+         SECTION 1 — HERO
+         ============================================================ -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-eyebrow">Para sa laundry shops sa Metro Manila</div>
+
+        <h1>Kumita sa tahimik na weekdays.</h1>
+
+        <p class="hero-h2">Gawing monthly members ang loyal mong suki.</p>
+
+        <p class="hero-h3">Pwedeng weekday-only redemptions — para weekdays sila pumunta sa store!</p>
+
+        <div class="hero-trust-strip">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span><strong>₱0 upfront</strong> · 8% lang kapag kumita ka · Walang lock-in</span>
+        </div>
+
+        <div class="hero-ctas">
+          <a href="tel:+639561608383" class="btn-primary">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            Tawagan kami: 09561608383
+          </a>
+          <a href="viber://chat?number=%2B639561608383" class="btn-secondary">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Chat in Viber
+          </a>
+        </div>
+
+        <p class="hero-handoff-line">
+          <strong>Si Hans o si Dexter ang sasagot</strong> — within 1 hour, Mon–Sat 9am–6pm.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 2 — THE REFRAME
+         ============================================================ -->
+    <section id="reframe" class="section-reframe">
+      <div class="container">
+        <span class="accent-bar"></span>
+        <div class="section-eyebrow">Para sa Loyal Mong Suki</div>
+        <h2 class="section-title">Yung suki mo, gawin na nating monthly members.</h2>
+        <p class="section-h2-bold">Siguradong sayo na ang isang buong buwan na laba ni customer with your membership.</p>
+        <p class="section-subtitle">Monthly renewal — pwedeng i-set to weekday-only redemption para weekdays sila magpalaba.</p>
+
+        <div class="reframe-grid">
+          <!-- Card 1 -->
+          <div class="reframe-card">
+            <div class="reframe-card-number">01</div>
+            <div class="reframe-state">
+              <span class="reframe-state-label">Ngayon</span>
+              <span class="reframe-state-value">₱250 per visit</span>
+            </div>
+            <div class="reframe-arrow"></div>
+            <div class="reframe-state after">
+              <span class="reframe-state-label">Sa Membership</span>
+              <span class="reframe-state-value">₱949/month*</span>
+            </div>
+            <p class="reframe-tagline">Same suki, siguradong kita — kahit hindi ma-redeem lahat ng visits.</p>
+            <p class="reframe-footnote">*Or depende sa price na iyong ise-set.</p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="reframe-card">
+            <div class="reframe-card-number">02</div>
+            <div class="reframe-state">
+              <span class="reframe-state-label">Ngayon</span>
+              <span class="reframe-state-value">Peso per visit</span>
+            </div>
+            <div class="reframe-arrow"></div>
+            <div class="reframe-state after">
+              <span class="reframe-state-label">Sa Membership</span>
+              <span class="reframe-state-value">Whole month paid</span>
+            </div>
+            <p class="reframe-tagline">Upfront na nasayo ang kita — siguraduhin na lang na satisfied at babalik sila.</p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="reframe-card">
+            <div class="reframe-card-number">03</div>
+            <div class="reframe-state">
+              <span class="reframe-state-label">Ngayon</span>
+              <span class="reframe-state-value">Estimate</span>
+            </div>
+            <div class="reframe-arrow"></div>
+            <div class="reframe-state after">
+              <span class="reframe-state-label">Sa Membership</span>
+              <span class="reframe-state-value">Kita mo na ilan ang subscribers, at ilan ang mag-re-renew</span>
+            </div>
+            <p class="reframe-tagline">Hindi na puro estimate — may locked-in ka nang kita na ensured babalik bawat buwan.</p>
+            <p class="reframe-footnote">*Siguraduhin lang natin ang maayos na service kay subscriber!</p>
+          </div>
+        </div>
+
+        <div class="reframe-closer">
+          <p>Hindi guess, hindi estimate. <strong>Booked, prepaid,</strong> sa bank mo bawat Biyernes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 3 — THE DEAL
+         ============================================================ -->
+    <section id="offer" class="section-deal">
+      <div class="container">
+        <span class="accent-bar"></span>
+        <div class="section-eyebrow">Ang Offer</div>
+        <h2 class="section-title">₱0 upfront — no investment fee.</h2>
+        <p class="section-h2-bold">We only earn if you succeed — 8% per successful subscription o renewal.</p>
+
+        <div class="deal-grid" style="margin-top:40px;">
+          <!-- What you pay -->
+          <div class="deal-card deal-pay">
+            <div class="deal-card-icon">
+              <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <h3>What you pay</h3>
+            <p class="deal-card-tagline">8% per successful subscription only.</p>
+
+            <div class="offer-inclusions-label">Inclusions</div>
+
+            <ul>
+              <li>
+                <span class="offer-bullet-icon">✓</span>
+                <div class="offer-bullet-content">
+                  <div class="offer-bullet-title">Monthly Customer Billing</div>
+                  <div class="offer-bullet-desc">Auto-billed sa miyembro mo. Auto-deposited sa bank mo bawat Biyernes.</div>
+                </div>
+              </li>
+              <li>
+                <span class="offer-bullet-icon">✓</span>
+                <div class="offer-bullet-content">
+                  <div class="offer-bullet-title">Posters &amp; Static QR</div>
+                  <div class="offer-bullet-desc">Storefront materials — na-design, na-print, na-laminate. Hatid sa tindahan.</div>
+                </div>
+              </li>
+              <li>
+                <span class="offer-bullet-icon">✓</span>
+                <div class="offer-bullet-content">
+                  <div class="offer-bullet-title">Staff Training &amp; Cash Incentives</div>
+                  <div class="offer-bullet-desc">In-person training plus cash bonuses para sa team mo bawat signup.</div>
+                </div>
+              </li>
+              <li>
+                <span class="offer-bullet-icon">✓</span>
+                <div class="offer-bullet-content">
+                  <div class="offer-bullet-title">Customer &amp; Merchant App</div>
+                  <div class="offer-bullet-desc">Both apps included. Walang dagdag bayad para sa software.</div>
+                </div>
+              </li>
+              <li>
+                <span class="offer-bullet-icon">✓</span>
+                <div class="offer-bullet-content">
+                  <div class="offer-bullet-title">Ongoing Store Support</div>
+                  <div class="offer-bullet-desc">Direct line sa founders — Mon–Sat 9am–6pm. Hindi auto-reply, hindi bot.</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- What you don't pay -->
+          <div class="deal-card deal-dont">
+            <div class="deal-card-icon">
+              <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+              </svg>
+            </div>
+            <h3>What you don't pay</h3>
+            <p class="deal-card-tagline">Walang ganito sa Memberry.</p>
+            <ul>
+              <li>
+                <span class="offer-bullet-icon">✗</span>
+                <div class="offer-bullet-content">
+                  <div class="offer-bullet-title">Walang setup fee</div>
+                  <div class="offer-bullet-desc">Hindi ka magbabayad para mag-start. Zero out of pocket.</div>
+                </div>
+              </li>
+              <li>
+                <span class="offer-bullet-icon">✗</span>
+                <div class="offer-bullet-content">
+                  <div class="offer-bullet-title">Walang lock-in contract</div>
+                  <div class="offer-bullet-desc">Pwede kang umalis kahit kailan. Walang exit penalty, walang hassle.</div>
+                </div>
+              </li>
+              <li>
+                <span class="offer-bullet-icon">✗</span>
+                <div class="offer-bullet-content">
+                  <div class="offer-bullet-title">Walang surprise fees</div>
+                  <div class="offer-bullet-desc">Yung 8%, yun lang. Walang dagdag, walang biglaang singil.</div>
+                </div>
+              </li>
+              <li>
+                <span class="offer-bullet-icon">✗</span>
+                <div class="offer-bullet-content">
+                  <div class="offer-bullet-title">Walang hidden charges</div>
+                  <div class="offer-bullet-desc">Lahat ng cost, transparent. No exceptions, period.</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="deal-closer">
+          <p>Kumikita kami <strong>kapag kumita ka.</strong> Yun ang buong principle.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 4 — MERCHANT LAUNCH KIT
+         ============================================================ -->
+    <section id="kit" class="section-kit">
+      <div class="container">
+        <span class="accent-bar"></span>
+        <div class="section-eyebrow">Ang Merchant Launch Kit</div>
+        <h2 class="section-title">Lahat ng kailangan mo para mag-launch — kasama na sa ₱0 upfront.</h2>
+        <p class="section-subtitle">Limang bagay na hatid namin sa tindahan mo. Handa na — i-deploy mo lang.</p>
+
+        <!-- Feature 1: Posters & QR -->
+        <div class="kit-feature">
+          <div class="kit-visual">
+            <div class="mockup-poster">
+              <div class="mockup-poster-brand">Memberry</div>
+              <div class="mockup-poster-headline">
+                Mag-subscribe sa <span>Weekday Plan</span>
+              </div>
+              <div class="mockup-qr">
+                <div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div>
+                <div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div>
+                <div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div>
+                <div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div>
+                <div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div>
+                <div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div>
+                <div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div>
+                <div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell empty"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div><div class="mockup-qr-cell"></div>
+              </div>
+              <div class="mockup-poster-cta">Scan to Subscribe</div>
+            </div>
+            <div class="mockup-poster-shadow"></div>
+          </div>
+          <div class="kit-text">
+            <div class="kit-text-eyebrow">01 · Storefront Materials</div>
+            <h3>Posters &amp; QR Code</h3>
+            <p>Na-design, na-print, na-laminate. I-stick mo lang sa counter, sa pinto, o sa side ng washer mo.</p>
+            <div class="kit-text-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              May pangalan ng tindahan mo at plan na nakalagay
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature 2: Customer App (image right) -->
+        <div class="kit-feature reverse">
+          <div class="kit-visual">
+            <div class="mockup-phone">
+              <div class="mockup-phone-screen">
+                <div class="mockup-phone-status">
+                  <span>9:41</span>
+                  <span>•••</span>
+                </div>
+                <div class="mockup-phone-header">
+                  <div class="mockup-phone-logo">M</div>
+                  <div class="mockup-phone-title">Memberry</div>
+                </div>
+                <div class="mockup-phone-content">
+                  <div class="mockup-phone-eyebrow">Available Plan</div>
+                  <div class="mockup-phone-plan-name">Weekday Wash &amp; Fold</div>
+                  <div class="mockup-phone-plan-meta">8kg/week · Mon–Fri only</div>
+                  <div class="mockup-phone-price">
+                    <span class="mockup-phone-price-amount">₱949</span>
+                    <span class="mockup-phone-price-period">/month</span>
+                  </div>
+                  <ul class="mockup-phone-features">
+                    <li>Up to 8kg washing per week</li>
+                    <li>Free pickup at counter</li>
+                    <li>Auto-renew monthly</li>
+                  </ul>
+                  <div class="mockup-phone-cta">Subscribe Now</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="kit-text">
+            <div class="kit-text-eyebrow">02 · Customer App</div>
+            <h3>Mobile app para sa suki mo</h3>
+            <p>Yung suki mo, mag-su-subscribe at mag-re-renew sa phone nila. Walang papel, walang membership card, walang hassle.</p>
+            <div class="kit-text-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              iOS at Android · Tagalog interface
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature 3: Merchant Dashboard -->
+        <div class="kit-feature">
+          <div class="kit-visual">
+            <div class="mockup-dashboard">
+              <div class="mockup-dashboard-bar">
+                <span class="mockup-dashboard-dot r"></span>
+                <span class="mockup-dashboard-dot y"></span>
+                <span class="mockup-dashboard-dot g"></span>
+                <span class="mockup-dashboard-url">memberry.com/merchant</span>
+              </div>
+              <div class="mockup-dashboard-content">
+                <div class="mockup-dashboard-title">Maria's Laundry · Quezon City</div>
+                <div class="mockup-dashboard-sub">April 2026 · Weekday Plan</div>
+                <div class="mockup-dashboard-stats">
+                  <div class="mockup-stat-card">
+                    <div class="mockup-stat-label">Active Members</div>
+                    <div class="mockup-stat-value">35</div>
+                  </div>
+                  <div class="mockup-stat-card">
+                    <div class="mockup-stat-label">This Month</div>
+                    <div class="mockup-stat-value">₱33,215</div>
+                  </div>
+                  <div class="mockup-stat-card highlight">
+                    <div class="mockup-stat-label">Net Deposit</div>
+                    <div class="mockup-stat-value">₱30,558</div>
+                  </div>
+                </div>
+                <div class="mockup-dashboard-chart">
+                  <div class="mockup-chart-line"></div>
+                </div>
+                <div class="mockup-dashboard-list">
+                  <div class="mockup-list-row">
+                    <span class="mockup-list-name">Juan D. — renewed</span>
+                    <span class="mockup-list-amount">+₱873</span>
+                  </div>
+                  <div class="mockup-list-row">
+                    <span class="mockup-list-name">Aileen R. — new member</span>
+                    <span class="mockup-list-amount">+₱873</span>
+                  </div>
+                  <div class="mockup-list-row">
+                    <span class="mockup-list-name">Marco T. — renewed</span>
+                    <span class="mockup-list-amount">+₱873</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="kit-text">
+            <div class="kit-text-eyebrow">03 · Merchant Dashboard</div>
+            <h3>Lahat ng miyembro at kita, isang screen</h3>
+            <p>Live view sa lahat — sino-sino ang miyembro, magkano ang kita ngayong buwan, at kelan dadating sa bank. Open mo lang sa phone, tablet, o computer.</p>
+            <div class="kit-text-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Export sa CSV kahit kailan — sa iyo ang data
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature 4: Automated Billing -->
+        <div class="kit-feature reverse">
+          <div class="kit-visual">
+            <div class="mockup-billing">
+              <div class="mockup-payment-row">
+                <div class="mockup-payment-card">
+                  <div class="mockup-payment-icon cards">VISA</div>
+                  <span class="mockup-payment-label">Cards</span>
+                </div>
+                <div class="mockup-payment-card">
+                  <div class="mockup-payment-icon maya">MAYA</div>
+                  <span class="mockup-payment-label">Maya</span>
+                </div>
+                <div class="mockup-payment-card">
+                  <div class="mockup-payment-icon gcash">GC</div>
+                  <span class="mockup-payment-label">GCash</span>
+                </div>
+              </div>
+              <div class="mockup-deposit">
+                <div class="mockup-deposit-eyebrow">Bank deposit · Friday</div>
+                <div class="mockup-deposit-amount">₱30,558</div>
+                <div class="mockup-deposit-meta">From <strong>Memberry</strong> · Net of 8% fee</div>
+              </div>
+            </div>
+          </div>
+          <div class="kit-text">
+            <div class="kit-text-eyebrow">04 · Automated Billing</div>
+            <h3>Cards, Maya, at GCash — automatic lahat</h3>
+            <p>Automatic ang bill sa miyembro mo bawat buwan. Automatic ang deposit sa bank mo bawat Biyernes. Walang papel, walang follow-up, walang manual entry.</p>
+            <div class="kit-text-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Direkta sa bank mo · Walang nakahawak ng pera mo
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature 5: Staff Training Kit -->
+        <div class="kit-feature">
+          <div class="kit-visual">
+            <div class="mockup-training">
+              <div class="mockup-paper mockup-paper-1">
+                <div class="mockup-paper-eyebrow">In-store Signage</div>
+                <div class="mockup-paper-title">Counter Card Templates</div>
+                <div class="mockup-paper-bullet">A4 + counter-size formats</div>
+                <div class="mockup-paper-bullet">Pre-filled at custom plan</div>
+              </div>
+              <div class="mockup-paper mockup-paper-2">
+                <div class="mockup-paper-eyebrow">Staff Manual</div>
+                <div class="mockup-paper-title">Onboarding Guide</div>
+                <div class="mockup-paper-bullet">Sign-up flow walkthrough</div>
+                <div class="mockup-paper-bullet">Common questions na sasagutin</div>
+              </div>
+              <div class="mockup-paper mockup-paper-3">
+                <div class="mockup-paper-eyebrow">Pitch Script</div>
+                <div class="mockup-paper-title">Staff Counter Script</div>
+                <div class="mockup-paper-script">"Sir, may bago kaming weekday plan — 8kg per week, ₱949 per month, mas tipid kumpara sa per-bisita. Pwede ko bang i-show sa iyo?"</div>
+                <div class="mockup-paper-incentive">+ ₱30 cash bonus per signup</div>
+              </div>
+            </div>
+          </div>
+          <div class="kit-text">
+            <div class="kit-text-eyebrow">05 · Staff Training Kit</div>
+            <h3>Pitch scripts at staff cash incentives</h3>
+            <p>Tutulungan ka naming i-train ang team mo in-person. Scripts, signage, at cash bonuses para sa staff (₱30/signup at iba pa) — kasama na sa setup.</p>
+            <div class="kit-text-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              In-person training sa store mo
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 5 — THE MATH
+         ============================================================ -->
+    <section id="math" class="section-math">
+      <div class="container">
+        <span class="accent-bar"></span>
+        <div class="section-eyebrow">Let's Talk Numbers</div>
+        <h2 class="section-title">Magkano ang kikitain monthly.</h2>
+        <p class="section-h2-bold" style="margin-bottom: 40px;">Halimbawa: ₱949/month, weekday-only laundry plan.</p>
+
+        <div class="math-table">
+          <div class="math-row math-row-header">
+            <div># of Subscribers</div>
+            <div>Bayad/buwan</div>
+            <div>Net sayo*</div>
+          </div>
+          <div class="math-row">
+            <div class="math-cell amount">35</div>
+            <div class="math-cell amount">₱33,215</div>
+            <div class="math-cell net">₱30,558</div>
+          </div>
+          <div class="math-row">
+            <div class="math-cell amount">75</div>
+            <div class="math-cell amount">₱71,175</div>
+            <div class="math-cell net">₱65,481</div>
+          </div>
+          <div class="math-row">
+            <div class="math-cell amount">100</div>
+            <div class="math-cell amount">₱94,900</div>
+            <div class="math-cell net">₱87,308</div>
+          </div>
+        </div>
+
+        <p class="math-disclaimer">*Net of 8% Memberry fee. Direct deposit sa bank mo, every Friday.</p>
+
+        <p class="math-note">
+          Weekday-only plan ito. Pwede mong dagdagan o palitan kahit kailan — weekend plans, full-service, premium tiers — habang lumalaki ang business mo.
+        </p>
+
+        <p class="math-closer">
+          Kayang-kaya ng 35 loyal customers ang lumipat sa monthly plan kung tama ang offer. Yan ang trabaho namin: tama ang offer, tama ang setup, tama ang flow.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 6 — HOW IT WORKS
+         ============================================================ -->
+    <section id="how" class="section-how">
+      <div class="container">
+        <span class="accent-bar"></span>
+        <div class="section-eyebrow">How It Works</div>
+        <h2 class="section-title">Tatlong hakbang. Mula setup hanggang unang bayad sa bank — 1 week lang.</h2>
+
+        <div class="how-grid">
+          <!-- Step 1 -->
+          <div class="how-step">
+            <div class="how-step-number">01</div>
+            <div class="how-screenshot">
+              <div class="how-screenshot-chrome">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="how-screenshot-content">
+                <div class="how-screenshot-label">Plan Setup</div>
+                <div class="how-screenshot-display">₱949/month</div>
+                <div class="how-screenshot-meta">8kg/week · Mon–Fri only</div>
+              </div>
+            </div>
+            <h3>Mag-set up ng monthly plan.</h3>
+            <p>Tutulungan ka naming mag-design — magkano, gaano kadalas, ano ang kasama.</p>
+            <p class="example">Halimbawa: ₱949/month for 8kg laundry/week, weekdays only.</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="how-step">
+            <div class="how-step-number">02</div>
+            <div class="how-screenshot">
+              <div class="how-screenshot-chrome">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="how-screenshot-content">
+                <div class="how-screenshot-label">QR Counter Scan</div>
+                <div class="how-screenshot-display">+1 Member</div>
+                <div class="how-screenshot-meta">Just signed up · ₱873 net</div>
+              </div>
+            </div>
+            <h3>I-scan ng customer ang QR sa counter.</h3>
+            <p>One scan, magbabayad online, member mo na agad. Walang papel, walang card, walang manual entry.</p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="how-step">
+            <div class="how-step-number">03</div>
+            <div class="how-screenshot">
+              <div class="how-screenshot-chrome">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="how-screenshot-content">
+                <div class="how-screenshot-label">Bank Deposit · Friday</div>
+                <div class="how-screenshot-display gold">₱30,558</div>
+                <div class="how-screenshot-meta">35 active members</div>
+              </div>
+            </div>
+            <h3>Auto-bayad bawat buwan. Direkta sa bank mo.</h3>
+            <p>Cards, Maya, at GCash. Libre ang weekly transfer tuwing Biyernes. Optional ₱20 daily kung gusto mo araw-araw.</p>
+          </div>
+        </div>
+
+        <div class="how-quote">
+          <blockquote>"Hindi na aantaying bumalik ang suki weekly — bayad na ang buong buwang laba."</blockquote>
+          <cite>— Hans Sayson, Memberry Co-Founder</cite>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 7 — TEAM
+         ============================================================ -->
+    <section id="team" class="section-team">
+      <div class="container">
+        <span class="accent-bar"></span>
+        <div class="section-eyebrow">Meet the Team</div>
+        <h2 class="section-title">Tatlong founder. Kausap mo agad — hindi sales rep, hindi bot.</h2>
+        <p class="section-subtitle">Sa first batch ng merchants namin, founder mismo ang katuwang mo. Si Hans sa strategy, si Dexter sa setup, si Brent sa technology.</p>
+
+        <div class="team-grid">
+          <div class="team-card">
+            <div class="team-photo">
+              <span class="team-initials">HS</span>
+            </div>
+            <div class="team-info">
+              <div class="team-role">Co-Founder · Strategy &amp; Growth</div>
+              <h3 class="team-name">Hans Sayson</h3>
+              <p class="team-bio">
+                Dating Grab Financial Group / Grab Payments. Naka-build ng MSME merchant programs sa Southeast Asia. Sa Memberry, leads product and growth strategy.
+              </p>
+              <a href="#" class="team-linkedin">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+                Connect on LinkedIn
+              </a>
+            </div>
+          </div>
+
+          <div class="team-card">
+            <div class="team-photo">
+              <span class="team-initials">DM</span>
+            </div>
+            <div class="team-info">
+              <div class="team-role">Co-Founder · Operations &amp; Finance</div>
+              <h3 class="team-name">Dexter Moya</h3>
+              <p class="team-bio">
+                BD, finance, at compliance. Si Dexter ang katuwang mo sa field — siya ang mag-walk through sa setup, billing, at staff training ng tindahan mo.
+              </p>
+              <a href="#" class="team-linkedin">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+                Connect on LinkedIn
+              </a>
+            </div>
+          </div>
+
+          <div class="team-card">
+            <div class="team-photo">
+              <span class="team-initials">BI</span>
+            </div>
+            <div class="team-info">
+              <div class="team-role">Head of Technology</div>
+              <h3 class="team-name">Brent Ibañez</h3>
+              <p class="team-bio">
+                Engineering lead. Naka-build ng merchant app, customer app, at billing infrastructure ng Memberry mula simula. Direct line para sa technical issues — average response under 2 hours.
+              </p>
+              <a href="#" class="team-linkedin">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+                Connect on LinkedIn
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="team-credentials">
+          <strong>Memberry</strong> is registered with the SEC of the Philippines · Office: <strong>Ortigas, Mandaluyong City, Philippines</strong> · Hours: Mon–Sat, 9am–6pm
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 8 — FREQUENTLY ASKED QUESTIONS
+         ============================================================ -->
+    <section id="faq" class="section-faq">
+      <div class="container">
+        <span class="accent-bar"></span>
+        <div class="section-eyebrow">Frequently Asked Questions</div>
+        <h2 class="section-title">Usual na tanong ng merchants with Memberry.</h2>
+
+        <div class="faq-categories">
+          <!-- Pera -->
+          <div class="faq-category">
+            <div class="faq-category-title">Pera</div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Talaga bang walang upfront cost?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Oo, walang upfront. Walang setup fee. Yung 8% lang ang singil namin, at kapag may successful subscription lang. Kung walang nag-su-subscribe, walang babayaran.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Bakit 8%? Pano kayo kumikita?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Yung 8% — kasama na ang payment processing (mga 2-3%), software, at operations namin. Kumikita lang kami kung kumikita ka — yun talaga ang buong arrangement. Walang setup fee, walang hidden charges.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Pano kung hindi makapagbayad ang customer?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Automatic ang retry ng billing. Kung consistent na hindi makabayad, mawawala sila sa miyembro mo. Hindi ka nawawalan ng pera — kasi hindi ka rin nag-se-serve sa kanila hanggang hindi sila bayad.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Kelan dadating sa bank account ko ang pera?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Tuwing Biyernes, libre. Kung gusto mo araw-araw, ₱20 lang per transfer.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plano at pricing -->
+          <div class="faq-category">
+            <div class="faq-category-title">Plano At Pricing</div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Tutulungan niyo ba akong i-set up ang pricing ng laundry plan?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Oo. Si Hans at Dexter mismo ang mag-walk through sa pricing — base sa current per-kilo rates mo, target margin, at kung anong rates ng katabing tindahan. Kasama sa setup, walang dagdag bayad.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Pano kung yung suki ko, mas weekend lang ang frequency?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Pwede kang mag-offer ng iba't ibang plans — weekday only, weekend only, full week, premium full-service. Yung suki mo ang pipili kung anong plan ang bagay sa schedule niya. Minsan kasi, weekday lang pala mga gusto nila — hindi mo lang alam.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Pwede ko bang baguhin ang plan ko after launch?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Oo, kahit kailan. Pwede kang magdagdag ng new plans, mag-adjust ng pricing, o mag-experiment sa weekend/holiday tiers — nasa merchant dashboard mo lahat. Yung existing members hindi maaapektuhan hangga't hindi sila mag-renew.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer at Data -->
+          <div class="faq-category">
+            <div class="faq-category-title">Customer At Data</div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Sa sino ang customer database — sa akin o sa Memberry?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Sa iyo. Pwede mong i-export kahit kailan. Memberry is the platform, hindi kami may-ari ng customer base mo.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Pano kung gusto kong i-export ang customer list ko?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>One click sa merchant dashboard. CSV format, lahat ng members at history.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Operations -->
+          <div class="faq-category">
+            <div class="faq-category-title">Operations</div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>May contract ba? Pano kung gusto ko nang umalis?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Walang lock-in contract. Pwede kang umalis kahit kailan. Yung mga existing members mo, may option silang i-continue ang plan o i-cancel — ikaw ang magde-decide.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Pano kung may issue with the app?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Direct line kay Brent (Head of Technology). Average response: under 2 hours, Mon–Sat 9am–6pm.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Sino ang nag-tatrain ng staff ko?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Kami. Kasama sa setup ang in-person staff training sa store mo, plus printed scripts at incentive guides. Hindi mo kailangang gumawa ng training program — meron na kami.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Memberry as a Company -->
+          <div class="faq-category">
+            <div class="faq-category-title">Memberry As A Company</div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Sino kayo? Bagong company ba?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Oo, bagong company kami. Naka-launch ngayong 2026. Founding team naka-build sa Grab Financial Group at iba pang fintech sa SEA. SEC-registered.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Pano kung mag-close kayo? Saan mapupunta ang pera?</span>
+                <span class="faq-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+              </button>
+              <div class="faq-answer">
+                <p>Yung customer payments, direkta sa bank account mo sila pumupunta — hindi humihinto sa amin. Kahit mawala kami bukas, yung pera mo, sa bank mo na.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 10 — CLOSING CTA
+         ============================================================ -->
+    <section id="cta" class="section-cta">
+      <div class="container">
+        <span class="accent-bar"></span>
+        <div class="section-eyebrow">Mag-usap Tayo</div>
+        <h2 class="section-title">Walang bayad para mag-start. Walang commitment hanggang handa ka.</h2>
+
+        <div class="contact-grid">
+          <a href="tel:+639561608383" class="contact-card">
+            <div class="contact-icon">
+              <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </div>
+            <div class="contact-label">Tawagan kami</div>
+            <div class="contact-value">0956-160-8383</div>
+          </a>
+
+          <a href="viber://chat?number=%2B639561608383" class="contact-card">
+            <div class="contact-icon">
+              <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+              </svg>
+            </div>
+            <div class="contact-label">I-Viber kami</div>
+            <div class="contact-value">0956-160-8383</div>
+          </a>
+
+          <a href="https://m.me/memberryph" class="contact-card">
+            <div class="contact-icon">
+              <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
+            <div class="contact-label">Mag-message sa Messenger</div>
+            <div class="contact-value">@memberryph</div>
+          </a>
+        </div>
+
+        <div class="contact-form">
+          <p class="contact-form-title">Kung gusto mo na lang ng callback, mag-iwan ng details:</p>
+
+          <div class="form-group">
+            <label for="phone">Cell phone number *</label>
+            <input type="tel" id="phone" placeholder="0917 ___ ____" required />
+          </div>
+
+          <div class="form-group">
+            <label for="name">Pangalan mo *</label>
+            <input type="text" id="name" placeholder="Juan Dela Cruz" required />
+          </div>
+
+          <div class="form-group">
+            <label for="business">Pangalan ng laundry shop mo *</label>
+            <input type="text" id="business" placeholder="Halimbawa: Maria's Laundry Shop" required />
+          </div>
+
+          <div class="form-group">
+            <label for="city">Saang city ka?</label>
+            <select id="city">
+              <option value="">Piliin ang city...</option>
+              <option>Quezon City</option>
+              <option>Manila</option>
+              <option>Makati</option>
+              <option>Pasig</option>
+              <option>Mandaluyong</option>
+              <option>Taguig</option>
+              <option>Pasay</option>
+              <option>San Juan</option>
+              <option>Caloocan</option>
+              <option>Marikina</option>
+              <option>Parañaque</option>
+              <option>Las Piñas</option>
+              <option>Muntinlupa</option>
+              <option>Valenzuela</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <button type="submit" class="form-submit">I-send sa amin →</button>
+
+          <p class="contact-promise">
+            Sasagot kami within <strong>1 hour</strong>, Mon–Sat 9am–6pm. Si Hans o si Dexter mismo — hindi auto-reply, hindi bot.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <a href="#" class="nav-logo">
+            <span class="nav-logo-mark">M</span>
+            Memberry
+          </a>
+          <p class="footer-brand-tagline">
+            Tatlong founder. ₱0 upfront. Kumikita kami kapag kumita ka.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="tel:+639561608383">0956-160-8383</a></li>
+            <li><a href="mailto:getmemberry@gmail.com">getmemberry@gmail.com</a></li>
+            <li>Metro Manila, PH</li>
+            <li>Mon–Sat, 9am–6pm</li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#team">Meet the Team</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="/merchant-portal">Merchant Login</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/merchant-agreement">Merchant Agreement</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div class="footer-registration">
+          SEC Registration: [pending] · DTI: [pending]
+        </div>
+        <div>
+          © <span id="year">2026</span> Memberry. Built in Manila.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Auto-update copyright year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const item = button.parentElement;
+        const isOpen = item.classList.contains('open');
+        const category = item.parentElement;
+        category.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+
+    // Smooth scroll with header offset
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href === '#' || href === '#main') return;
+        const target = document.querySelector(href);
+        if (!target) return;
+        e.preventDefault();
+        const navHeight = 70;
+        const top = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
+    });
+
+    // Form: prevent default for mockup demo
+    document.querySelector('.contact-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Salamat! Sasagot kami sa iyo within 1 hour. — Hans at Dexter');
+    });
+  </script>
+</body>
+</html>

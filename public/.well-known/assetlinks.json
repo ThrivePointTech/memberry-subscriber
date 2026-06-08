@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.memberry.customers",
+      "sha256_cert_fingerprints": [
+        "18:09:2E:0A:A1:13:7C:96:0A:69:41:01:D9:8C:01:5C:84:E8:47:BE:00:30:97:AD:A9:1A:55:6F:5D:50:8F:3B"
+      ]
+    }
+  }
+]

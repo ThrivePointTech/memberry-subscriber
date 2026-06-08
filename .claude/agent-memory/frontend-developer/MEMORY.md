@@ -1,0 +1,1 @@
+- [Memberry website redesign 2026](project_redesign_2026.md) — Full site rebuild April 2026: design tokens, section order, component names, CSS-only mockups, font rules

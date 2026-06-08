@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #142F2D;
+  --teal: #35736E;
+  --teal-700: #2A5C58;
+  --teal-300: #7FB0AC;
+  --teal-100: #DCEAE8;
+  --gold: #C9A84C;
+  --gold-700: #A8893A;
+  --gold-100: #F6EDD2;
+  --mint: #F5F8F7;
+  --white: #FFFFFF;
+  --ink-90: #1F3937;
+  --ink-70: #455957;
+  --ink-50: #6F7F7D;
+  --ink-30: #A2ADAB;
+  --ink-15: #CDD5D3;
+  --border: #E1E8E5;
+  --border-strong: #C7D3CF;
+  --fg-1: var(--ink);
+  --fg-2: var(--ink-70);
+  --fg-3: var(--ink-50);
+  --bg-app: var(--mint);
+  --bg-surface: var(--white);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-app);
+  color: var(--fg-1);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
