@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
-import QRCode from "react-qr-code";
+import { useState, useTransition, useEffect } from "react";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.getmemberry.com";
@@ -24,7 +23,7 @@ const labelClass = "block text-sm font-semibold text-[#001a18] mb-2";
 const STORAGE_VERSION = 1;
 const STALE_MS = 30 * 60 * 1000; // 30 minutes
 
-type Step = "info" | "qr-pending" | "setup-pin" | "qr-success" | "redeem-prompt" | "download";
+type Step = "info" | "paying" | "setup-pin" | "qr-success" | "redeem-prompt" | "download";
 
 interface Staff {
   id: string;
@@ -43,7 +42,7 @@ interface StoredCheckout {
   merchantId: string;
   name: string;
   phone: string;
-  step: Exclude<Step, "info">;
+  step: Exclude<Step, "info" | "paying">;
   enrollmentSessionId: string | null;
   subscription: Subscription | null;
   staffs: Staff[] | null;
@@ -66,7 +65,6 @@ export default function CheckoutForm({
   const [phone, setPhone] = useState("");
   const [staffs, setStaffs] = useState<Staff[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
-  const [qrData, setQrData] = useState<string | null>(null);
   const [enrollmentSessionId, setEnrollmentSessionId] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [pin, setPin] = useState("");
@@ -77,7 +75,6 @@ export default function CheckoutForm({
   const [hasExistingSub, setHasExistingSub] = useState(false);
   const [subscribedAt, setSubscribedAt] = useState<Date | null>(null);
   const [, startTransition] = useTransition();
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fullPhone = `${PHONE_PREFIX}${phone.trim()}`;
 
@@ -133,39 +130,6 @@ export default function CheckoutForm({
 
       try {
         switch (stored.step) {
-          case "qr-pending": {
-            // Check if payment landed while we were away
-            const lr = await fetch(
-              `${API_URL}/public/redeem/lookup?phone=${encodeURIComponent(storedFullPhone)}&merchant_id=${encodeURIComponent(merchantId)}`
-            );
-            if (lr.ok) {
-              const lj = await lr.json();
-              const subs: Subscription[] = lj.data?.subscriptions ?? [];
-              if (subs.length > 0) {
-                // Payment confirmed — fast-path to post-payment step
-                const hasPinAlready: boolean = lj.data?.customer?.has_pin === true;
-                let fetchedStaffs: Staff[] = stored.staffs ?? [];
-                try {
-                  const sr = await fetch(`${API_URL}/public/checkout/staffs/${merchantId}`);
-                  if (sr.ok) fetchedStaffs = (await sr.json()).data ?? [];
-                } catch { /* use cached staffs */ }
-                setEnrollmentSessionId(stored.enrollmentSessionId);
-                setSubscription(subs[0]);
-                setStaffs(fetchedStaffs);
-                restoreSubscribedAt(stored.subscribedAtISO);
-                const nextStep = hasPinAlready ? "qr-success" : "setup-pin";
-                persistCheckout({ step: nextStep, subscription: subs[0], staffs: fetchedStaffs });
-                setStep(nextStep);
-                break;
-              }
-            }
-            // Payment not yet confirmed — resume polling
-            const payload = JSON.stringify({ t: "co", planId, name: stored.name, phone: storedFullPhone });
-            setQrData(payload);
-            setStep("qr-pending");
-            break;
-          }
-
           case "setup-pin": {
             // Re-check has_pin in case user completed it in another tab
             try {
@@ -242,73 +206,7 @@ export default function CheckoutForm({
     if (step === "download") clearCheckout();
   }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Polling for payment status ───────────────────────────────────────────────
-
-  useEffect(() => {
-    if (step !== "qr-pending" || !qrData) return;
-    const startedAt = Date.now();
-
-    async function checkStatus() {
-      if (Date.now() - startedAt > 10 * 60 * 1000) {
-        clearInterval(pollRef.current!);
-        clearCheckout();
-        setError("QR code expired. Please go back and try again.");
-        setStep("info");
-        return;
-      }
-      try {
-        const res = await fetch(
-          `${API_URL}/public/checkout/pending?plan_id=${encodeURIComponent(planId)}&phone=${encodeURIComponent(fullPhone)}`
-        );
-        if (!res.ok) return;
-        const json = await res.json();
-        if (json.data?.status === "paid") {
-          clearInterval(pollRef.current!);
-          const now = new Date();
-          setSubscribedAt(now);
-          const eid = json.data.enrollmentSessionId ?? null;
-          setEnrollmentSessionId(eid);
-          let hasPinAlready = false;
-          let fetchedStaffs: Staff[] = [];
-          let fetchedSub: Subscription | null = null;
-          try {
-            const [sr, lr] = await Promise.all([
-              fetch(`${API_URL}/public/checkout/staffs/${merchantId}`),
-              fetch(`${API_URL}/public/redeem/lookup?phone=${encodeURIComponent(fullPhone)}&merchant_id=${encodeURIComponent(merchantId)}`),
-            ]);
-            if (sr.ok) fetchedStaffs = (await sr.json()).data ?? [];
-            if (lr.ok) {
-              const lj = await lr.json();
-              fetchedSub = lj.data?.subscriptions?.[0] ?? null;
-              hasPinAlready = lj.data?.customer?.has_pin === true;
-            }
-          } catch { /* optional */ }
-          setStaffs(fetchedStaffs);
-          setSubscription(fetchedSub);
-          const nextStep = hasPinAlready ? "qr-success" : "setup-pin";
-          persistCheckout({
-            version: STORAGE_VERSION,
-            planId,
-            merchantId,
-            name,
-            phone,
-            step: nextStep,
-            enrollmentSessionId: eid,
-            subscription: fetchedSub,
-            staffs: fetchedStaffs,
-            subscribedAtISO: now.toISOString(),
-          });
-          setStep(nextStep);
-        }
-      } catch { /* keep polling */ }
-    }
-
-    checkStatus();
-    pollRef.current = setInterval(checkStatus, 3000);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Step 1: collect name + phone → show QR ──────────────────────────────────
+  // ── Step 1: collect name + phone → redirect to PayMongo checkout ────────────
 
   function handleInfoSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -333,21 +231,32 @@ export default function CheckoutForm({
         }
       } catch { /* fail open */ }
 
-      const payload = JSON.stringify({ t: "co", planId, name: trimmedName, phone: fullPhone });
-      setQrData(payload);
-      persistCheckout({
-        version: STORAGE_VERSION,
-        planId,
-        merchantId,
-        name: trimmedName,
-        phone: phone.trim(),
-        step: "qr-pending",
-        enrollmentSessionId: null,
-        subscription: null,
-        staffs: null,
-        subscribedAtISO: null,
-      });
-      setStep("qr-pending");
+      setStep("paying");
+
+      try {
+        const res = await fetch(`${API_URL}/public/checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan_id: planId, phone: fullPhone, customer_name: trimmedName }),
+        });
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({}));
+          setError((json as { error?: string }).error ?? "Failed to start checkout. Please try again.");
+          setStep("info");
+          return;
+        }
+        const json = await res.json();
+        const checkoutUrl: string = json.data?.checkout_url ?? json.checkout_url;
+        if (!checkoutUrl) {
+          setError("No checkout URL returned. Please try again.");
+          setStep("info");
+          return;
+        }
+        window.location.href = checkoutUrl;
+      } catch {
+        setError("Network error. Please try again.");
+        setStep("info");
+      }
     });
   }
 
@@ -515,43 +424,14 @@ export default function CheckoutForm({
     );
   }
 
-  if (step === "qr-pending") {
+  if (step === "paying") {
     return (
-      <div className="flex flex-col items-center gap-5">
-        <div className="text-center">
-          <p className="text-sm font-semibold text-[#001a18]" style={{ fontFamily: "var(--font-manrope)" }}>
-            Show this QR to the staff at the counter
-          </p>
-          <p className="text-xs text-[#5c706a] mt-1">
-            The merchant will scan it to process your payment.
-          </p>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-[#e4ede9] shadow-sm">
-          <QRCode value={qrData!} size={220} fgColor="#142F2D" bgColor="#ffffff" />
-        </div>
-
-        <div className="flex items-center gap-2 text-sm text-[#5c706a]">
-          <Spinner />
-          <span>Waiting for payment…</span>
-        </div>
-
-        {error && (
-          <p className="text-red-600 text-sm font-medium text-center" role="alert">{error}</p>
-        )}
-
-        <button
-          type="button"
-          onClick={() => {
-            if (pollRef.current) clearInterval(pollRef.current);
-            clearCheckout();
-            setStep("info");
-            setError(null);
-          }}
-          className="text-xs text-[#5c706a] underline underline-offset-2"
-        >
-          ← Back
-        </button>
+      <div className="flex flex-col items-center gap-5 py-8">
+        <Spinner size="lg" />
+        <p className="text-sm font-semibold text-[#001a18]" style={{ fontFamily: "var(--font-manrope)" }}>
+          Preparing your checkout…
+        </p>
+        <p className="text-xs text-[#5c706a]">You&apos;ll be redirected to complete payment.</p>
       </div>
     );
   }
