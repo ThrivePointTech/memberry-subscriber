@@ -28,10 +28,10 @@ const team = [
     bio: "Handles setup, billing, and launch support to make the platform simple for shops to use every day.",
   },
   {
-    photo: "/team/brent-ibanez.png",
+    photo: "/team/micah-bule.jpg",
     avatarBg: "var(--teal-700)",
-    name: "Brent Ibañez",
-    role: "Head of Technology",
+    name: "Micah Bule",
+    role: "Co-Founder · Technology",
     bio: "Leads the technology behind the app, QR system, billing, and dashboard. Makes everything easy to use and quick to resolve when issues arise.",
   },
 ];
@@ -64,7 +64,9 @@ export default function TeamSection() {
           </div>
           <motion.div variants={fadeUp} className="pt-5 md:pt-4">
             <p className="text-[17px] text-[var(--fg-2)] font-[family-name:var(--font-body)] leading-relaxed mb-6">
-              We&apos;ve spent years building software for large financial companies. We left because we wanted to build something for the businesses that don&apos;t make the case studies.
+              We&apos;ve spent years building software for large financial
+              companies. We left because we wanted to build something for the
+              businesses that don&apos;t make the case studies.
             </p>
             <div className="flex gap-3">
               <a

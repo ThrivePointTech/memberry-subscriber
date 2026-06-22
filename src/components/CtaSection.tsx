@@ -27,8 +27,21 @@ export default function CtaSection() {
   const [focusField, setFocusField] = useState<string | null>(null);
 
   const cities = [
-    "Quezon City","Manila","Makati","Pasig","Mandaluyong","Taguig","Pasay",
-    "San Juan","Caloocan","Marikina","Parañaque","Las Piñas","Muntinlupa","Valenzuela","Other",
+    "Quezon City",
+    "Manila",
+    "Makati",
+    "Pasig",
+    "Mandaluyong",
+    "Taguig",
+    "Pasay",
+    "San Juan",
+    "Caloocan",
+    "Marikina",
+    "Parañaque",
+    "Las Piñas",
+    "Muntinlupa",
+    "Valenzuela",
+    "Other",
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,17 +63,38 @@ export default function CtaSection() {
   // Focus ring uses box-shadow which isn't well-supported as a Tailwind arbitrary value — keep inline
   const focusStyle = (field: string): React.CSSProperties =>
     focusField === field
-      ? { borderColor: "var(--teal)", boxShadow: "0 0 0 3px rgba(53,115,110,0.15)" }
+      ? {
+          borderColor: "var(--teal)",
+          boxShadow: "0 0 0 3px rgba(53,115,110,0.15)",
+        }
       : {};
 
   const contactInfo = [
-    { icon: "mail" as const, label: "Email", value: "getmemberry@gmail.com", href: "mailto:getmemberry@gmail.com" },
-    { icon: "phone" as const, label: "Phone", value: "+63 956 160-8383", href: "tel:+639561608383" },
-    { icon: "store" as const, label: "Address", value: "Mandaluyong City, Metro Manila, PH", href: "#" },
+    {
+      icon: "mail" as const,
+      label: "Email",
+      value: "team@getmemberry.com",
+      href: "mailto:team@getmemberry.com",
+    },
+    {
+      icon: "phone" as const,
+      label: "Phone",
+      value: "+63 956 160-8383",
+      href: "tel:+639561608383",
+    },
+    {
+      icon: "store" as const,
+      label: "Address",
+      value: "Mandaluyong City, Metro Manila, PH",
+      href: "#",
+    },
   ];
 
   return (
-    <section id="contact" className="py-16 px-5 md:py-24 md:px-8 bg-[var(--ink)]">
+    <section
+      id="contact"
+      className="py-16 px-5 md:py-24 md:px-8 bg-[var(--ink)]"
+    >
       <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-start">
         {/* Left */}
         <motion.div
@@ -86,7 +120,8 @@ export default function CtaSection() {
             variants={fadeUp}
             className="text-[17px] text-[var(--teal-300)] font-[family-name:var(--font-body)] leading-relaxed m-0"
           >
-            Whether you&apos;re ready to launch or just exploring, we&apos;re happy to walk you through how Memberry fits your business.
+            Whether you&apos;re ready to launch or just exploring, we&apos;re
+            happy to walk you through how Memberry fits your business.
           </motion.p>
 
           {/* Contact details */}
@@ -102,8 +137,12 @@ export default function CtaSection() {
                   <Icon name={c.icon} size={17} />
                 </span>
                 <div>
-                  <div className="text-[12px] font-medium text-[rgba(255,255,255,0.4)] font-[family-name:var(--font-body)] mb-0.5">{c.label}</div>
-                  <div className="text-[15px] font-medium text-white font-[family-name:var(--font-body)]">{c.value}</div>
+                  <div className="text-[12px] font-medium text-[rgba(255,255,255,0.4)] font-[family-name:var(--font-body)] mb-0.5">
+                    {c.label}
+                  </div>
+                  <div className="text-[15px] font-medium text-white font-[family-name:var(--font-body)]">
+                    {c.value}
+                  </div>
                 </div>
               </motion.a>
             ))}
@@ -123,12 +162,20 @@ export default function CtaSection() {
               <div className="text-[var(--teal)]">
                 <Icon name="check-circle" size={48} strokeWidth={1.5} />
               </div>
-              <h3 className="font-[family-name:var(--font-display)] font-semibold text-[22px] text-[var(--ink)] m-0">Message sent.</h3>
+              <h3 className="font-[family-name:var(--font-display)] font-semibold text-[22px] text-[var(--ink)] m-0">
+                Message sent.
+              </h3>
               <p className="text-[15px] text-[var(--fg-2)] font-[family-name:var(--font-body)] m-0">
                 We&apos;ll get back to you within one business day.
               </p>
               <button
-                onClick={() => { setStatus("idle"); setName(""); setPhone(""); setBusinessName(""); setCity(""); }}
+                onClick={() => {
+                  setStatus("idle");
+                  setName("");
+                  setPhone("");
+                  setBusinessName("");
+                  setCity("");
+                }}
                 className="text-[14px] text-[var(--teal)] bg-transparent border-0 cursor-pointer font-[family-name:var(--font-body)] font-medium"
               >
                 Send another message
@@ -143,7 +190,12 @@ export default function CtaSection() {
               {/* Name + Phone grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="ct-name" className="block text-[13px] font-medium text-[var(--fg-2)] mb-1.5 font-[family-name:var(--font-body)]">Name</label>
+                  <label
+                    htmlFor="ct-name"
+                    className="block text-[13px] font-medium text-[var(--fg-2)] mb-1.5 font-[family-name:var(--font-body)]"
+                  >
+                    Name
+                  </label>
                   <input
                     id="ct-name"
                     type="text"
@@ -158,7 +210,12 @@ export default function CtaSection() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="ct-phone" className="block text-[13px] font-medium text-[var(--fg-2)] mb-1.5 font-[family-name:var(--font-body)]">Phone number</label>
+                  <label
+                    htmlFor="ct-phone"
+                    className="block text-[13px] font-medium text-[var(--fg-2)] mb-1.5 font-[family-name:var(--font-body)]"
+                  >
+                    Phone number
+                  </label>
                   <input
                     id="ct-phone"
                     type="tel"
@@ -176,7 +233,12 @@ export default function CtaSection() {
 
               {/* Business name */}
               <div>
-                <label htmlFor="ct-business" className="block text-[13px] font-medium text-[var(--fg-2)] mb-1.5 font-[family-name:var(--font-body)]">Business name</label>
+                <label
+                  htmlFor="ct-business"
+                  className="block text-[13px] font-medium text-[var(--fg-2)] mb-1.5 font-[family-name:var(--font-body)]"
+                >
+                  Business name
+                </label>
                 <input
                   id="ct-business"
                   type="text"
@@ -193,7 +255,12 @@ export default function CtaSection() {
 
               {/* City */}
               <div>
-                <label htmlFor="ct-city" className="block text-[13px] font-medium text-[var(--fg-2)] mb-1.5 font-[family-name:var(--font-body)]">City</label>
+                <label
+                  htmlFor="ct-city"
+                  className="block text-[13px] font-medium text-[var(--fg-2)] mb-1.5 font-[family-name:var(--font-body)]"
+                >
+                  City
+                </label>
                 <select
                   id="ct-city"
                   value={city}
@@ -205,7 +272,9 @@ export default function CtaSection() {
                 >
                   <option value="">Select your city…</option>
                   {cities.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -219,7 +288,9 @@ export default function CtaSection() {
                   cursor: status === "loading" ? "not-allowed" : "pointer",
                 }}
               >
-                {status === "loading" ? "Sending…" : (
+                {status === "loading" ? (
+                  "Sending…"
+                ) : (
                   <>
                     Send message
                     <Icon name="arrow-right" size={16} />
@@ -228,7 +299,10 @@ export default function CtaSection() {
               </button>
 
               {status === "error" && (
-                <p className="text-[13px] font-[family-name:var(--font-body)] m-0" style={{ color: "#DC2626" }}>
+                <p
+                  className="text-[13px] font-[family-name:var(--font-body)] m-0"
+                  style={{ color: "#DC2626" }}
+                >
                   Something went wrong. Please try again or email us directly.
                 </p>
               )}
