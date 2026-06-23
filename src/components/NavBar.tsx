@@ -27,13 +27,22 @@ export default function NavBar() {
         background: scrolled ? "rgba(245,248,247,0.92)" : "transparent",
         backdropFilter: scrolled ? "blur(12px)" : "none",
         WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
+        borderBottom: scrolled
+          ? "1px solid var(--border)"
+          : "1px solid transparent",
       }}
     >
       <div className="h-[72px] max-w-[1200px] w-full mx-auto px-8 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="inline-flex items-center no-underline">
-          <Image src="/images/logo_full.png" alt="Memberry" width={140} height={36} className="h-9 w-auto" priority />
+          <Image
+            src="/images/logo_full.png"
+            alt="Memberry"
+            width={140}
+            height={36}
+            className="h-9 w-auto"
+            priority
+          />
         </a>
 
         {/* Desktop nav links */}
@@ -53,7 +62,8 @@ export default function NavBar() {
         <div className="flex items-center gap-3">
           <a
             href="#contact"
-            className="text-[15px] font-semibold text-white bg-[var(--ink)] no-underline px-5 py-[9px] rounded-lg">
+            className="text-[15px] font-semibold text-white bg-[var(--ink)] no-underline px-5 py-[9px] rounded-lg"
+          >
             Book a Demo
           </a>
           {/* Hamburger — mobile only */}
@@ -83,13 +93,6 @@ export default function NavBar() {
               {label}
             </a>
           ))}
-          <a
-            href="#"
-            onClick={() => setMenuOpen(false)}
-            className="text-base font-medium text-[var(--fg-2)] no-underline"
-          >
-            Sign in
-          </a>
         </div>
       )}
     </nav>
