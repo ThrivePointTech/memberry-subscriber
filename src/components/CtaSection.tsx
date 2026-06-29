@@ -85,7 +85,8 @@ export default function CtaSection() {
     {
       icon: "store" as const,
       label: "Address",
-      value: "Mandaluyong City, Metro Manila, PH",
+      value:
+        "41S, Twin Oaks Place West Tower, Highway Hills, Mandaluyong City, Metro Manila, PH 1550",
       href: "#",
     },
   ];
