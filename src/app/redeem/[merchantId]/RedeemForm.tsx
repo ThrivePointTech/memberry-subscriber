@@ -13,6 +13,13 @@ const labelClass = "block text-sm font-semibold text-[#001a18] mb-2";
 
 type Step = "phone" | "pin" | "pick" | "subscription" | "amount" | "success";
 
+interface SubscriptionService {
+  plan_service_id: string;
+  service_name: string;
+  allowance_count: number | null;
+  usage_count: number;
+}
+
 interface Subscription {
   id: string;
   plan_name: string | null;
@@ -22,6 +29,7 @@ interface Subscription {
   max_per_visit_unit: string | null;
   usage_this_period: string;
   period_end: string;
+  services: SubscriptionService[];
 }
 
 interface LookupResult {
@@ -53,6 +61,17 @@ function allowanceLabel(type: string | null, amount: string | null, usage: strin
   return "";
 }
 
+function serviceRemainingLabel(service: SubscriptionService): string {
+  if (service.allowance_count == null) return "Unlimited";
+  const remaining = Math.max(0, service.allowance_count - service.usage_count);
+  return `${remaining} of ${service.allowance_count} remaining`;
+}
+
+function servicesSummary(services: SubscriptionService[]): string {
+  if (services.length === 0) return "";
+  return services.map((s) => `${s.service_name}: ${serviceRemainingLabel(s)}`).join(" · ");
+}
+
 // count and unlimited both auto-deduct 1; weight_kg and loads need user input
 function isAutoRedeem(type: string | null): boolean {
   return !type || type === "unlimited" || type === "count";
@@ -64,6 +83,7 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
   const [pin, setPin] = useState("");
   const [lookup, setLookup] = useState<LookupResult | null>(null);
   const [selectedSub, setSelectedSub] = useState<Subscription | null>(null);
+  const [selectedService, setSelectedService] = useState<SubscriptionService | null>(null);
   const [amount, setAmount] = useState("1");
   const [result, setResult] = useState<RedemptionResult | null>(null);
   const [redeemedAt, setRedeemedAt] = useState<Date | null>(null);
@@ -129,7 +149,7 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
     setStep("subscription");
   }
 
-  async function submitRedemption(amountRedeemed: string) {
+  async function submitRedemption(amountRedeemed: string, planServiceId?: string) {
     if (!selectedSub) return;
     setLoading(true);
     setError(null);
@@ -142,6 +162,7 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
           merchant_id: merchantId,
           amount_redeemed: amountRedeemed,
           pin: pin || undefined,
+          plan_service_id: planServiceId,
         }),
       });
       const json = await res.json();
@@ -180,6 +201,7 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
     setPin("");
     setLookup(null);
     setSelectedSub(null);
+    setSelectedService(null);
     setAmount("1");
     setResult(null);
     setRedeemedAt(null);
@@ -319,7 +341,9 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
                   {sub.plan_name ?? "Membership Plan"}
                 </p>
                 <p className="text-[#5c706a] text-xs">
-                  {allowanceLabel(sub.allowance_type, sub.allowance_amount, sub.usage_this_period)}
+                  {sub.services.length > 0
+                    ? servicesSummary(sub.services)
+                    : allowanceLabel(sub.allowance_type, sub.allowance_amount, sub.usage_this_period)}
                 </p>
                 <p className="text-[#9ab0a8] text-xs">Valid until {formatDate(sub.period_end)}</p>
               </div>
@@ -379,12 +403,14 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
             </p>
           </div>
 
-          <div className="flex justify-between text-sm">
-            <span className="text-[#5c706a]">Allowance</span>
-            <span className="font-semibold text-[#001a18]">
-              {allowanceLabel(sub.allowance_type, sub.allowance_amount, sub.usage_this_period)}
-            </span>
-          </div>
+          {sub.services.length === 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-[#5c706a]">Allowance</span>
+              <span className="font-semibold text-[#001a18]">
+                {allowanceLabel(sub.allowance_type, sub.allowance_amount, sub.usage_this_period)}
+              </span>
+            </div>
+          )}
 
           {sub.max_per_visit && (
             <div className="flex justify-between text-sm">
@@ -405,7 +431,31 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
           <p className="text-red-600 text-sm font-medium" role="alert">{error}</p>
         )}
 
-        {autoRedeem ? (
+        {sub.services.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-[#5c706a] font-medium">Select a service to redeem</p>
+            {sub.services.map((svc) => {
+              const exhausted = svc.allowance_count != null && svc.usage_count >= svc.allowance_count;
+              return (
+                <button
+                  key={svc.plan_service_id}
+                  type="button"
+                  disabled={loading || exhausted}
+                  onClick={() => {
+                    setSelectedService(svc);
+                    void submitRedemption("1", svc.plan_service_id);
+                  }}
+                  className="w-full text-left bg-white border border-[#e4ede9] rounded-xl px-4 py-3 hover:bg-[#e8f4f0] hover:border-[#b8ddd1] transition disabled:opacity-50 disabled:hover:bg-white flex items-center justify-between"
+                >
+                  <span className="text-sm font-semibold text-[#001a18]">{svc.service_name}</span>
+                  <span className="text-xs text-[#5c706a]">
+                    {exhausted ? "Exhausted" : serviceRemainingLabel(svc)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : autoRedeem ? (
           <button
             type="button"
             disabled={loading}
@@ -537,10 +587,24 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
           <div className="flex justify-between text-sm">
             <span className="text-[#5c706a]">Redeemed</span>
             <span className="font-semibold text-[#001a18]">
-              {redeemedAmount} {sub.allowance_type === "weight_kg" ? "kg" : sub.allowance_type === "loads" ? (parseInt(redeemedAmount) === 1 ? "load" : "loads") : "visit"}
+              {selectedService
+                ? selectedService.service_name
+                : `${redeemedAmount} ${sub.allowance_type === "weight_kg" ? "kg" : sub.allowance_type === "loads" ? (parseInt(redeemedAmount) === 1 ? "load" : "loads") : "visit"}`}
             </span>
           </div>
-          {sub.allowance_type && sub.allowance_type !== "unlimited" ? (
+          {selectedService ? (
+            <div className="flex justify-between text-sm">
+              <span className="text-[#5c706a]">Remaining</span>
+              <span className="font-semibold text-[#001a18]">
+                {selectedService.allowance_count == null
+                  ? "Unlimited"
+                  : serviceRemainingLabel({
+                      ...selectedService,
+                      usage_count: selectedService.usage_count + 1,
+                    })}
+              </span>
+            </div>
+          ) : sub.allowance_type && sub.allowance_type !== "unlimited" ? (
             <div className="flex justify-between text-sm">
               <span className="text-[#5c706a]">Remaining</span>
               <span className="font-semibold text-[#001a18]">

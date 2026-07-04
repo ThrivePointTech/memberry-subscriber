@@ -53,9 +53,11 @@ interface StoredCheckout {
 export default function CheckoutForm({
   planId,
   merchantId,
+  hasServices = false,
 }: {
   planId: string;
   merchantId: string;
+  hasServices?: boolean;
 }) {
   const storageKey = `memberry_checkout__${planId}`;
 
@@ -660,7 +662,10 @@ export default function CheckoutForm({
         </div>
 
         <div className="flex flex-col gap-3 w-full">
-          {subscription && subscription.allowance_type !== "weight_kg" && subscription.allowance_type !== "loads" ? (
+          {subscription &&
+          !hasServices &&
+          subscription.allowance_type !== "weight_kg" &&
+          subscription.allowance_type !== "loads" ? (
             <button
               type="button"
               onClick={handleRedeemNow}

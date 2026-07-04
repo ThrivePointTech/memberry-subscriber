@@ -5,6 +5,12 @@ import CheckoutForm from "./CheckoutForm";
 
 const API_URL = process.env.API_BASE_URL ?? "https://api.getmemberry.com";
 
+interface PlanService {
+  id: string;
+  service_name: string;
+  allowance_count: number | null;
+}
+
 interface Plan {
   id: string;
   name: string;
@@ -18,6 +24,13 @@ interface Plan {
   tags: string[] | null;
   merchant_name: string;
   merchant_id: string;
+  plan_services?: PlanService[];
+}
+
+function formatServiceAllowance(services: PlanService[]): string {
+  return services
+    .map((s) => (s.allowance_count == null ? `${s.service_name} (unlimited)` : `${s.service_name} ×${s.allowance_count}`))
+    .join(" · ");
 }
 
 async function fetchPlan(planId: string): Promise<Plan | null> {
@@ -73,7 +86,10 @@ export default async function CheckoutPage({
   const plan = await fetchPlan(planId);
   if (!plan) notFound();
 
-  const allowance = formatAllowance(plan.allowance_type, plan.allowance_amount, plan.max_per_visit, plan.max_per_visit_unit);
+  const allowance =
+    plan.plan_services && plan.plan_services.length > 0
+      ? formatServiceAllowance(plan.plan_services)
+      : formatAllowance(plan.allowance_type, plan.allowance_amount, plan.max_per_visit, plan.max_per_visit_unit);
 
   return (
     <main className="min-h-screen bg-[#f7faf9] flex items-start justify-center pt-8 pb-24 px-4">
@@ -151,7 +167,11 @@ export default async function CheckoutPage({
           )}
         </div>
 
-        <CheckoutForm planId={plan.id} merchantId={plan.merchant_id} />
+        <CheckoutForm
+          planId={plan.id}
+          merchantId={plan.merchant_id}
+          hasServices={!!plan.plan_services && plan.plan_services.length > 0}
+        />
 
         {/* Already a member — redeem link */}
         <Link

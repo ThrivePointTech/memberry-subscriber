@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 
+interface PlanService {
+  id: string;
+  service_name: string;
+  allowance_count: number | null;
+}
+
 interface Plan {
   id: string;
   name: string;
@@ -13,6 +19,13 @@ interface Plan {
   max_per_visit_unit: string | null;
   description: string | null;
   tags: string[] | null;
+  plan_services?: PlanService[];
+}
+
+function formatServiceAllowance(services: PlanService[]): string {
+  return services
+    .map((s) => (s.allowance_count == null ? `${s.service_name} (unlimited)` : `${s.service_name} ×${s.allowance_count}`))
+    .join(" · ");
 }
 
 function formatPrice(centavos: number): string {
@@ -35,7 +48,10 @@ function formatAllowance(type: string, amount: string | null, maxPerVisit: strin
 }
 
 export default function PlanCard({ plan }: { plan: Plan }) {
-  const allowance = formatAllowance(plan.allowance_type, plan.allowance_amount, plan.max_per_visit, plan.max_per_visit_unit);
+  const allowance =
+    plan.plan_services && plan.plan_services.length > 0
+      ? formatServiceAllowance(plan.plan_services)
+      : formatAllowance(plan.allowance_type, plan.allowance_amount, plan.max_per_visit, plan.max_per_visit_unit);
 
   return (
     <div className="bg-white rounded-2xl border border-[#e4ede9] shadow-sm p-6">

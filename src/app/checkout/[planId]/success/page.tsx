@@ -7,6 +7,12 @@ export const metadata: Metadata = {
 
 const API_URL = process.env.API_BASE_URL ?? "https://api.getmemberry.com";
 
+interface PlanService {
+  id: string;
+  service_name: string;
+  allowance_count: number | null;
+}
+
 interface Plan {
   id: string;
   name: string;
@@ -17,6 +23,13 @@ interface Plan {
   description: string | null;
   merchant_name: string;
   merchant_id: string;
+  plan_services?: PlanService[];
+}
+
+function formatServiceAllowance(services: PlanService[]): string {
+  return services
+    .map((s) => (s.allowance_count == null ? `${s.service_name} (unlimited)` : `${s.service_name} ×${s.allowance_count}`))
+    .join(" · ");
 }
 
 async function fetchPlan(planId: string): Promise<Plan | null> {
@@ -69,7 +82,9 @@ export default async function SuccessPage({
   const plan = await fetchPlan(planId);
   const nextBillingDate = plan ? getNextBillingDate(plan.billing_cycle) : null;
   const allowance = plan
-    ? formatAllowance(plan.allowance_type, plan.allowance_amount)
+    ? plan.plan_services && plan.plan_services.length > 0
+      ? formatServiceAllowance(plan.plan_services)
+      : formatAllowance(plan.allowance_type, plan.allowance_amount)
     : null;
 
   return (
