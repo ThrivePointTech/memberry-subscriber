@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import QRCode from "react-qr-code";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.getmemberry.com";
 
 const PHONE_PREFIX = "+63";
+
+const POLL_INTERVAL_MS = 2500;
 
 const inputClass =
   "w-full px-4 py-3 rounded-xl border border-[#c8d9d3] bg-white text-[#001a18] text-base placeholder:text-[#9ab0a8] focus:outline-none focus:ring-2 focus:ring-[#142F2D] disabled:opacity-50 transition";
 
 const labelClass = "block text-sm font-semibold text-[#001a18] mb-2";
 
-type Step = "phone" | "pin" | "pick" | "subscription" | "amount" | "success";
+type Step = "phone" | "pin" | "pick" | "subscription" | "amount" | "awaiting-scan" | "success";
 
 interface SubscriptionService {
   plan_service_id: string;
@@ -41,6 +44,17 @@ interface RedemptionResult {
   id: string;
   amount_redeemed: string;
 }
+
+interface RedemptionToken {
+  token: string;
+  nonce: string;
+  expires_at: string;
+}
+
+type TokenStatus =
+  | { status: "pending" }
+  | { status: "expired" }
+  | { status: "confirmed"; redemption_id: string; amount_redeemed: string; redeemed_at: string };
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-PH", {
@@ -89,6 +103,11 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
   const [redeemedAt, setRedeemedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [redemptionToken, setRedemptionToken] = useState<RedemptionToken | null>(null);
+  const [tokenExpired, setTokenExpired] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  // Remembered so "Generate a new QR" can re-request the same redemption.
+  const [lastRedeem, setLastRedeem] = useState<{ amount: string; planServiceId?: string } | null>(null);
 
   const fullPhone = `${PHONE_PREFIX}${phone.trim()}`;
 
@@ -149,6 +168,8 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
     setStep("subscription");
   }
 
+  // Requests a redemption QR token — nothing is deducted until merchant staff
+  // scan the QR and confirm it.
   async function submitRedemption(amountRedeemed: string, planServiceId?: string) {
     if (!selectedSub) return;
     setLoading(true);
@@ -167,18 +188,65 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
       });
       const json = await res.json();
       if (!res.ok) {
-        setError(json.error ?? "Could not record redemption. Please try again.");
+        setError(json.error ?? "Could not start redemption. Please try again.");
         return;
       }
-      setResult(json.data as RedemptionResult);
-      setRedeemedAt(new Date());
-      setStep("success");
+      setLastRedeem({ amount: amountRedeemed, planServiceId });
+      setRedemptionToken(json.data as RedemptionToken);
+      setTokenExpired(false);
+      setStep("awaiting-scan");
     } catch {
       setError("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
   }
+
+  // Poll for staff confirmation while the QR is displayed.
+  useEffect(() => {
+    if (step !== "awaiting-scan" || !redemptionToken || tokenExpired) return;
+    const nonce = redemptionToken.nonce;
+    let cancelled = false;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_URL}/redemptions/token-status/${encodeURIComponent(nonce)}`);
+        if (!res.ok || cancelled) return;
+        const json = await res.json();
+        const status = json.data as TokenStatus;
+        if (cancelled) return;
+        if (status.status === "confirmed") {
+          setResult({ id: status.redemption_id, amount_redeemed: status.amount_redeemed });
+          setRedeemedAt(new Date(status.redeemed_at));
+          setStep("success");
+        } else if (status.status === "expired") {
+          setTokenExpired(true);
+        }
+      } catch {
+        // Transient polling failure — keep trying until expiry.
+      }
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [step, redemptionToken, tokenExpired]);
+
+  // Countdown to token expiry.
+  useEffect(() => {
+    if (step !== "awaiting-scan" || !redemptionToken) return;
+    const expiresAt = new Date(redemptionToken.expires_at).getTime();
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+      setSecondsLeft(remaining);
+      if (remaining === 0) setTokenExpired(true);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [step, redemptionToken]);
 
   function handleAmountSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -207,6 +275,10 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
     setRedeemedAt(null);
     setError(null);
     setLoading(false);
+    setRedemptionToken(null);
+    setTokenExpired(false);
+    setSecondsLeft(0);
+    setLastRedeem(null);
   }
 
   // ── Phone step ────────────────────────────────────────────────────────────────
@@ -464,7 +536,7 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
             style={{ fontFamily: "var(--font-manrope)" }}
           >
             {loading && <Spinner />}
-            {loading ? "Recording…" : "Redeem 1 visit"}
+            {loading ? "Generating QR…" : "Redeem 1 visit"}
           </button>
         ) : (
           <button
@@ -537,7 +609,7 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
           style={{ fontFamily: "var(--font-manrope)" }}
         >
           {loading && <Spinner />}
-          {loading ? "Recording…" : "Confirm Redemption"}
+          {loading ? "Generating QR…" : "Confirm Redemption"}
         </button>
 
         <button
@@ -548,6 +620,93 @@ export default function RedeemForm({ merchantId }: { merchantId: string }) {
           ← Back
         </button>
       </form>
+    );
+  }
+
+  // ── Awaiting-scan step (QR + polling) ────────────────────────────────────────
+
+  if (step === "awaiting-scan" && selectedSub && redemptionToken) {
+    const sub = selectedSub;
+    const qrValue = JSON.stringify({ t: "rd", token: redemptionToken.token });
+    const mm = Math.floor(secondsLeft / 60);
+    const ss = String(secondsLeft % 60).padStart(2, "0");
+
+    return (
+      <div className="flex flex-col items-center gap-5 py-4 text-center">
+        <div>
+          <h2
+            className="text-xl font-extrabold text-[#001a18] mb-1"
+            style={{ fontFamily: "var(--font-manrope)" }}
+          >
+            {tokenExpired ? "QR code expired" : "Show this QR to the staff"}
+          </h2>
+          <p className="text-sm text-[#5c706a] leading-relaxed">
+            {tokenExpired
+              ? "No worries — generate a new one and show it to the staff."
+              : "Your redemption is confirmed once the staff scans this code."}
+          </p>
+        </div>
+
+        <div
+          className={`bg-white rounded-2xl border border-[#e4ede9] p-5 ${tokenExpired ? "opacity-30" : ""}`}
+          data-testid="redemption-qr"
+        >
+          <QRCode value={qrValue} size={208} aria-label="Redemption QR code" />
+        </div>
+
+        <div className="bg-white rounded-2xl border border-[#e4ede9] p-4 w-full text-left flex flex-col gap-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-[#5c706a]">Plan</span>
+            <span className="font-semibold text-[#001a18]">{sub.plan_name ?? "Membership Plan"}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-[#5c706a]">Redeeming</span>
+            <span className="font-semibold text-[#001a18]">
+              {selectedService
+                ? selectedService.service_name
+                : `${lastRedeem?.amount ?? "1"} ${sub.allowance_type === "weight_kg" ? "kg" : sub.allowance_type === "loads" ? (parseInt(lastRedeem?.amount ?? "1") === 1 ? "load" : "loads") : "visit"}`}
+            </span>
+          </div>
+        </div>
+
+        {error && (
+          <p className="text-red-600 text-sm font-medium" role="alert">{error}</p>
+        )}
+
+        {tokenExpired ? (
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => void submitRedemption(lastRedeem?.amount ?? "1", lastRedeem?.planServiceId)}
+            className="w-full bg-[#142F2D] text-white font-bold text-base py-3.5 rounded-xl hover:bg-[#1e4a47] transition disabled:opacity-60 flex items-center justify-center gap-2"
+            style={{ fontFamily: "var(--font-manrope)" }}
+          >
+            {loading && <Spinner />}
+            {loading ? "Generating…" : "Generate a new QR"}
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-[#5c706a]">
+            <span
+              className="w-4 h-4 border-2 border-[#142F2D] border-t-transparent rounded-full animate-spin shrink-0"
+              aria-hidden
+            />
+            Waiting for staff to scan · expires in {mm}:{ss}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => {
+            setRedemptionToken(null);
+            setTokenExpired(false);
+            setError(null);
+            setStep("subscription");
+          }}
+          className="text-xs text-[#5c706a] underline underline-offset-2 text-center"
+        >
+          ← Cancel
+        </button>
+      </div>
     );
   }
 
