@@ -65,6 +65,7 @@ export default function CheckoutForm({
   const [step, setStep] = useState<Step>("info");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [staffs, setStaffs] = useState<Staff[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [enrollmentSessionId, setEnrollmentSessionId] = useState<string | null>(null);
@@ -75,6 +76,7 @@ export default function CheckoutForm({
   const [redeeming, setRedeeming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasExistingSub, setHasExistingSub] = useState(false);
+  const [existingSubId, setExistingSubId] = useState<string | null>(null);
   const [subscribedAt, setSubscribedAt] = useState<Date | null>(null);
   const [, startTransition] = useTransition();
 
@@ -214,24 +216,39 @@ export default function CheckoutForm({
     e.preventDefault();
     setError(null);
     setHasExistingSub(false);
+    setExistingSubId(null);
 
     const trimmedName = name.trim();
     if (!trimmedName) { setError("Please enter your name."); return; }
     if (!phone.trim()) { setError("Please enter your phone number."); return; }
+    const trimmedEmail = email.trim();
+    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError("Please enter a valid email address, or leave it blank.");
+      return;
+    }
 
     startTransition(async () => {
+      let eligibilityRes: Response;
       try {
-        const res = await fetch(
-          `${API_URL}/public/redeem/lookup?phone=${encodeURIComponent(fullPhone)}&merchant_id=${encodeURIComponent(merchantId)}`
+        eligibilityRes = await fetch(
+          `${API_URL}/public/plans/${planId}/eligibility?phone=${encodeURIComponent(fullPhone)}`
         );
-        if (res.ok) {
-          const json = await res.json();
-          if ((json.data?.subscriptions ?? []).length > 0) {
-            setHasExistingSub(true);
-            return;
-          }
-        }
-      } catch { /* fail open */ }
+      } catch {
+        setError("Something went wrong. Please try again.");
+        return;
+      }
+
+      if (!eligibilityRes.ok) {
+        setError("Something went wrong. Please try again.");
+        return;
+      }
+
+      const eligibilityJson = await eligibilityRes.json();
+      if (!eligibilityJson.data?.eligible) {
+        setExistingSubId(eligibilityJson.data?.subscriptionId ?? null);
+        setHasExistingSub(true);
+        return;
+      }
 
       setStep("paying");
 
@@ -239,7 +256,12 @@ export default function CheckoutForm({
         const res = await fetch(`${API_URL}/public/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan_id: planId, phone: fullPhone, customer_name: trimmedName }),
+          body: JSON.stringify({
+            plan_id: planId,
+            phone: fullPhone,
+            customer_name: trimmedName,
+            ...(trimmedEmail ? { email: trimmedEmail } : {}),
+          }),
         });
         if (!res.ok) {
           const json = await res.json().catch(() => ({}));
@@ -393,14 +415,32 @@ export default function CheckoutForm({
           </p>
         </div>
 
+        <div>
+          <label htmlFor="email" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>
+            Email for receipts <span className="font-normal text-[#9ab0a8]">(optional)</span>
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+
         {hasExistingSub && (
           <div className="rounded-xl border border-[#b8ddd1] bg-[#e8f4f0] px-4 py-3" role="alert">
             <p className="text-sm font-semibold text-[#1a5c48]" style={{ fontFamily: "var(--font-manrope)" }}>
-              You already have an active subscription here.
+              You already have an active subscription to this plan.
             </p>
             <p className="text-xs text-[#2d7a5f] mt-0.5">
               Want to use it?{" "}
-              <a href={`/redeem/${merchantId}`} className="underline font-semibold hover:text-[#1a5c48]">
+              <a
+                href={existingSubId ? `/redeem/${merchantId}?sub=${existingSubId}` : `/redeem/${merchantId}`}
+                className="underline font-semibold hover:text-[#1a5c48]"
+              >
                 Redeem your subscription instead
               </a>
             </p>
