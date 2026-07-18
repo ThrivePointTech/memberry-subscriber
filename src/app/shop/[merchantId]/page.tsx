@@ -18,6 +18,12 @@ interface Merchant {
   profile_picture_url: string | null;
 }
 
+interface PlanService {
+  id: string;
+  service_name: string;
+  allowance_count: number | null;
+}
+
 interface Plan {
   id: string;
   name: string;
@@ -30,6 +36,7 @@ interface Plan {
   max_per_visit_unit: string | null;
   tags: string[] | null;
   status: string;
+  plan_services?: PlanService[];
 }
 
 async function fetchMerchant(merchantId: string): Promise<Merchant | null> {
