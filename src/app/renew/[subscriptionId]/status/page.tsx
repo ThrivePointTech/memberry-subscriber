@@ -1,63 +1,29 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams, useParams, useRouter } from "next/navigation";
+import { useSearchParams, useParams } from "next/navigation";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.getmemberry.com";
 
-const ASSETS_URL = (process.env.NEXT_PUBLIC_ASSETS_URL ?? "").replace(/\/$/, "");
-
-function assetUrl(path: string | null): string | null {
-  if (!path) return null;
-  if (path.startsWith("http")) return path;
-  return `${ASSETS_URL}/${path}`;
-}
-
 const POLL_INTERVAL_MS = 3000;
-const TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+const TIMEOUT_MS = 10 * 60 * 1000;
 
-type PollStatus = "waiting" | "paid" | "failed" | "timeout";
-
-interface MerchantInfo {
-  name: string;
-  profile_picture_url: string | null;
-}
+type PollStatus = "waiting" | "renewed" | "failed" | "timeout";
 
 const FAILED_STATUSES = new Set(["failed", "cancelled", "expired"]);
 
-export default function PaymentStatusPage() {
-  const params = useParams<{ planId: string }>();
+export default function RenewalStatusPage() {
+  const params = useParams<{ subscriptionId: string }>();
   const searchParams = useSearchParams();
-  const router = useRouter();
 
-  const planId = params.planId;
+  const subscriptionId = params.subscriptionId;
   const paymentIntentId = searchParams.get("payment_intent_id");
-  const qrImageUrl = searchParams.get("qr");
-  const isRenewal = searchParams.get("renewal") === "true";
 
   const [pollStatus, setPollStatus] = useState<PollStatus>("waiting");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [merchant, setMerchant] = useState<MerchantInfo | null>(null);
   const startedAt = useRef(Date.now());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    async function loadMerchant() {
-      try {
-        const planRes = await fetch(`${API_URL}/plans/${planId}`);
-        if (!planRes.ok) return;
-        const planJson = await planRes.json();
-        const merchantId: string = planJson.data?.merchant_id;
-        if (!merchantId) return;
-        const mRes = await fetch(`${API_URL}/public/merchant/${merchantId}`);
-        if (!mRes.ok) return;
-        const mJson = await mRes.json();
-        setMerchant({ name: mJson.data.name, profile_picture_url: mJson.data.profile_picture_url ?? null });
-      } catch { /* non-critical */ }
-    }
-    loadMerchant();
-  }, [planId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!paymentIntentId) {
@@ -77,111 +43,52 @@ export default function PaymentStatusPage() {
         const res = await fetch(
           `${API_URL}/public/checkout/payment-status/${paymentIntentId}`
         );
-        if (!res.ok) return; // transient — keep polling
+        if (!res.ok) return;
         const json = await res.json();
         const status: string = json.data?.status ?? "";
 
         if (status === "paid") {
           if (timerRef.current) clearInterval(timerRef.current);
-          setPollStatus("paid");
-          if (!isRenewal) router.replace(`/checkout/${planId}/success`);
+          setPollStatus("renewed");
         } else if (FAILED_STATUSES.has(status)) {
           if (timerRef.current) clearInterval(timerRef.current);
           setPollStatus("failed");
-          setErrorMessage("Payment was not completed. Please go back and try again.");
+          setErrorMessage("Payment was not completed. Please try again.");
         }
-        // Otherwise keep polling
       } catch {
-        // Network hiccup — keep polling
+        // Keep polling on network hiccup
       }
     }
 
-    // Check immediately, then on interval
     checkStatus();
     timerRef.current = setInterval(checkStatus, POLL_INTERVAL_MS);
-
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [paymentIntentId, planId, router, isRenewal]);
+  }, [paymentIntentId]);
 
   return (
     <main className="min-h-screen bg-[#f7faf9] flex items-start justify-center pt-16 pb-24 px-4">
       <div className="w-full max-w-md">
-        {/* Merchant header */}
-        {merchant && (
-          <div className="mb-8 flex flex-col items-center gap-3 text-center">
-            {assetUrl(merchant.profile_picture_url) ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={assetUrl(merchant.profile_picture_url)!}
-                alt={merchant.name}
-                className="w-16 h-16 rounded-full object-cover ring-1 ring-[#e4ede9]"
-              />
-            ) : (
-              <div
-                className="w-16 h-16 rounded-full bg-[#142F2D] text-white flex items-center justify-center text-xl font-bold"
-                style={{ fontFamily: "var(--font-manrope)" }}
-              >
-                {merchant.name.trim()[0]?.toUpperCase() ?? "?"}
-              </div>
-            )}
-            <span
-              className="text-[#001a18] text-base font-extrabold tracking-tight"
-              style={{ fontFamily: "var(--font-manrope)" }}
-            >
-              {merchant.name}
-            </span>
-          </div>
-        )}
-
         <div className="bg-white rounded-2xl border border-[#e4ede9] shadow-sm p-8 text-center">
           {pollStatus === "waiting" && (
             <>
-              {qrImageUrl ? (
-                /* GCash QR fallback — show scannable QR */
-                <>
-                  <p
-                    className="text-[#001a18] text-lg font-extrabold mb-2"
-                    style={{ fontFamily: "var(--font-manrope)" }}
-                  >
-                    Scan to pay with GCash
-                  </p>
-                  <p className="text-[#5c706a] text-sm mb-6">
-                    Open your GCash app and scan this QR code to complete payment.
-                  </p>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={qrImageUrl}
-                    alt="GCash QR code"
-                    className="mx-auto w-52 h-52 rounded-xl border border-[#e4ede9]"
-                  />
-                  <div className="mt-6 flex items-center justify-center gap-2">
-                    <Spinner />
-                    <p className="text-[#5c706a] text-sm">Waiting for payment…</p>
-                  </div>
-                </>
-              ) : (
-                /* Standard waiting state after redirect */
-                <>
-                  <div className="flex justify-center mb-4">
-                    <Spinner size="lg" />
-                  </div>
-                  <p
-                    className="text-[#001a18] text-lg font-extrabold mb-2"
-                    style={{ fontFamily: "var(--font-manrope)" }}
-                  >
-                    Waiting for payment…
-                  </p>
-                  <p className="text-[#5c706a] text-sm">
-                    Complete the payment in your app or browser tab. This page will update automatically.
-                  </p>
-                </>
-              )}
+              <div className="flex justify-center mb-4">
+                <Spinner size="lg" />
+              </div>
+              <p
+                className="text-[#001a18] text-lg font-extrabold mb-2"
+                style={{ fontFamily: "var(--font-manrope)" }}
+              >
+                Waiting for payment…
+              </p>
+              <p className="text-[#5c706a] text-sm">
+                Complete the GCash payment in your app or browser. This page will update automatically.
+              </p>
             </>
           )}
 
-          {pollStatus === "paid" && isRenewal && (
+          {pollStatus === "renewed" && (
             <>
               <div className="w-16 h-16 bg-[#e8f4f0] rounded-full flex items-center justify-center mx-auto mb-5">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a5c48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -194,9 +101,15 @@ export default function PaymentStatusPage() {
               >
                 Renewed successfully!
               </p>
-              <p className="text-[#5c706a] text-sm">
+              <p className="text-[#5c706a] text-sm mb-6">
                 Your subscription has been renewed. You can now continue using your benefits.
               </p>
+              <a
+                href={`/renew/${subscriptionId}`}
+                className="text-sm text-[#142F2D] font-semibold underline underline-offset-2"
+              >
+                Back to subscription
+              </a>
             </>
           )}
 
@@ -216,14 +129,8 @@ export default function PaymentStatusPage() {
                 Taking longer than expected
               </p>
               <p className="text-[#5c706a] text-sm mb-6">
-                Check your GCash or Maya app to confirm the payment. If it went through, your subscription will activate shortly.
+                Check your GCash app to confirm the payment. If it went through, your subscription will renew shortly.
               </p>
-              <a
-                href={`/checkout/${planId}/success`}
-                className="inline-block text-sm text-[#142F2D] font-semibold underline underline-offset-2"
-              >
-                I already paid — check status
-              </a>
             </>
           )}
 
@@ -246,7 +153,7 @@ export default function PaymentStatusPage() {
                 {errorMessage ?? "Something went wrong. Please try again."}
               </p>
               <a
-                href={`/checkout/${planId}`}
+                href={`/renew/${subscriptionId}`}
                 className="inline-block w-full bg-[#142F2D] text-white font-bold text-sm py-3 rounded-xl hover:bg-[#1e4a47] transition text-center"
                 style={{ fontFamily: "var(--font-manrope)" }}
               >
