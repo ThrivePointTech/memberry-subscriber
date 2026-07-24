@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, type FormEvent } from "react";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.getmemberry.com";
@@ -9,7 +9,7 @@ const ASSETS_URL = (process.env.NEXT_PUBLIC_ASSETS_URL ?? "").replace(/\/$/, "")
 
 function assetUrl(path: string | null): string | null {
   if (!path) return null;
-  if (path.startsWith("http")) return path; // already absolute
+  if (path.startsWith("http")) return path;
   return `${ASSETS_URL}/${path}`;
 }
 
@@ -21,9 +21,15 @@ const PHONE_PREFIX = "+63";
 const labelClass = "block text-sm font-semibold text-[#001a18] mb-2";
 
 const STORAGE_VERSION = 1;
-const STALE_MS = 30 * 60 * 1000; // 30 minutes
+const STALE_MS = 30 * 60 * 1000;
 
-type Step = "info" | "paying" | "setup-pin" | "qr-success" | "redeem-prompt" | "download";
+type Step = "info" | "method-picker" | "paying" | "setup-pin" | "qr-success" | "redeem-prompt" | "download";
+
+const METHOD_LABELS: Record<string, string> = {
+  gcash: "GCash",
+  paymaya: "Maya",
+  card: "Credit / Debit Card",
+};
 
 interface Staff {
   id: string;
@@ -42,7 +48,7 @@ interface StoredCheckout {
   merchantId: string;
   name: string;
   phone: string;
-  step: Exclude<Step, "info" | "paying">;
+  step: Exclude<Step, "info" | "method-picker" | "paying">;
   enrollmentSessionId: string | null;
   subscription: Subscription | null;
   staffs: Staff[] | null;
@@ -78,6 +84,13 @@ export default function CheckoutForm({
   const [hasExistingSub, setHasExistingSub] = useState(false);
   const [existingSubId, setExistingSubId] = useState<string | null>(null);
   const [subscribedAt, setSubscribedAt] = useState<Date | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpMonth, setCardExpMonth] = useState("");
+  const [cardExpYear, setCardExpYear] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [cardPaying, setCardPaying] = useState(false);
   const [, startTransition] = useTransition();
 
   const fullPhone = `${PHONE_PREFIX}${phone.trim()}`;
@@ -89,7 +102,7 @@ export default function CheckoutForm({
       const raw = sessionStorage.getItem(storageKey);
       const existing: Partial<StoredCheckout> = raw ? JSON.parse(raw) : {};
       sessionStorage.setItem(storageKey, JSON.stringify({ ...existing, ...patch, savedAt: Date.now() }));
-    } catch { /* storage unavailable — continue silently */ }
+    } catch { /* storage unavailable */ }
   }
 
   function clearCheckout() {
@@ -121,10 +134,8 @@ export default function CheckoutForm({
         return;
       }
 
-      // Restore base state (never restore pin)
       setName(stored.name);
       setPhone(stored.phone);
-
       const storedFullPhone = `${PHONE_PREFIX}${stored.phone}`;
 
       function restoreSubscribedAt(iso: string | null) {
@@ -135,7 +146,6 @@ export default function CheckoutForm({
       try {
         switch (stored.step) {
           case "setup-pin": {
-            // Re-check has_pin in case user completed it in another tab
             try {
               const lr = await fetch(
                 `${API_URL}/public/redeem/lookup?phone=${encodeURIComponent(storedFullPhone)}&merchant_id=${encodeURIComponent(merchantId)}`
@@ -152,7 +162,7 @@ export default function CheckoutForm({
                   break;
                 }
               }
-            } catch { /* fall through to setup-pin */ }
+            } catch { /* fall through */ }
             setEnrollmentSessionId(stored.enrollmentSessionId);
             setSubscription(stored.subscription);
             setStaffs(stored.staffs ?? []);
@@ -160,7 +170,6 @@ export default function CheckoutForm({
             setStep("setup-pin");
             break;
           }
-
           case "qr-success":
             setEnrollmentSessionId(stored.enrollmentSessionId);
             setSubscription(stored.subscription);
@@ -168,10 +177,8 @@ export default function CheckoutForm({
             restoreSubscribedAt(stored.subscribedAtISO);
             setStep("qr-success");
             break;
-
           case "redeem-prompt":
             if (!stored.subscription) {
-              // Defensive: subscription missing, skip to download
               setEnrollmentSessionId(stored.enrollmentSessionId);
               restoreSubscribedAt(stored.subscribedAtISO);
               persistCheckout({ step: "download" });
@@ -183,36 +190,30 @@ export default function CheckoutForm({
               setStep("redeem-prompt");
             }
             break;
-
           case "download":
             setEnrollmentSessionId(stored.enrollmentSessionId);
             setSubscription(stored.subscription);
             restoreSubscribedAt(stored.subscribedAtISO);
             setStep("download");
             break;
-
           default:
             clearCheckout();
         }
       } catch {
         clearCheckout();
       }
-
       setRecovering(false);
     }
-
     void recover();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Clear storage once download step is reached and rendered ─────────────────
 
   useEffect(() => {
     if (step === "download") clearCheckout();
   }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Step 1: collect name + phone → redirect to PayMongo checkout ────────────
+  // ── Step 1: collect name + phone → createSession → method-picker ─────────────
 
-  function handleInfoSubmit(e: React.FormEvent) {
+  function handleInfoSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setHasExistingSub(false);
@@ -250,10 +251,8 @@ export default function CheckoutForm({
         return;
       }
 
-      setStep("paying");
-
       try {
-        const res = await fetch(`${API_URL}/public/checkout`, {
+        const res = await fetch(`${API_URL}/public/checkout/session`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -266,27 +265,143 @@ export default function CheckoutForm({
         if (!res.ok) {
           const json = await res.json().catch(() => ({}));
           setError((json as { error?: string }).error ?? "Failed to start checkout. Please try again.");
-          setStep("info");
           return;
         }
         const json = await res.json();
-        const checkoutUrl: string = json.data?.checkout_url ?? json.checkout_url;
-        if (!checkoutUrl) {
-          setError("No checkout URL returned. Please try again.");
-          setStep("info");
+        const sessionId: string = json.data?.enrollment_session_id;
+        const methods: string[] = json.data?.payment_methods ?? ["gcash"];
+        if (!sessionId) {
+          setError("Failed to create checkout session. Please try again.");
           return;
         }
-        window.location.href = checkoutUrl;
+        setEnrollmentSessionId(sessionId);
+        setPaymentMethods(methods);
+        setStep("method-picker");
       } catch {
         setError("Network error. Please try again.");
-        setStep("info");
       }
     });
   }
 
+  // ── Step 2: method selection → initiate payment ───────────────────────────────
+
+  function handleMethodSelect(method: string) {
+    setSelectedMethod(method);
+    setError(null);
+
+    if (method === "card") {
+      setStep("paying");
+      return;
+    }
+
+    startTransition(async () => {
+      setStep("paying");
+      try {
+        if (method === "gcash") {
+          const res = await fetch(`${API_URL}/public/checkout/pay/gcash`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enrollment_session_id: enrollmentSessionId }),
+          });
+          if (!res.ok) {
+            const json = await res.json().catch(() => ({}));
+            setError((json as { error?: string }).error ?? "Payment failed. Please try again.");
+            setStep("method-picker");
+            return;
+          }
+          const json = await res.json();
+          const redirectUrl: string = json.data?.redirect_url;
+          if (!redirectUrl) { setError("No redirect URL returned."); setStep("method-picker"); return; }
+          window.location.href = redirectUrl;
+        } else {
+          const res = await fetch(`${API_URL}/public/checkout/pay/subscribe`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enrollment_session_id: enrollmentSessionId, payment_method_type: method }),
+          });
+          if (!res.ok) {
+            const json = await res.json().catch(() => ({}));
+            setError((json as { error?: string }).error ?? "Payment failed. Please try again.");
+            setStep("method-picker");
+            return;
+          }
+          const json = await res.json();
+          const redirectUrl: string = json.data?.redirect_url;
+          if (!redirectUrl) { setError("No redirect URL returned."); setStep("method-picker"); return; }
+          window.location.href = redirectUrl;
+        }
+      } catch {
+        setError("Network error. Please try again.");
+        setStep("method-picker");
+      }
+    });
+  }
+
+  // ── Card: tokenize client-side via PayMongo public key, then pay ──────────────
+
+  async function handleCardPay(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const pmPublicKey = process.env.NEXT_PUBLIC_PAYMONGO_PUBLIC_KEY ?? "";
+    if (!pmPublicKey) { setError("Card payments are not configured."); return; }
+    setCardPaying(true);
+    try {
+      const pmRes = await fetch("https://api.paymongo.com/v1/payment_methods", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Basic ${btoa(`${pmPublicKey}:`)}`,
+        },
+        body: JSON.stringify({
+          data: {
+            attributes: {
+              type: "card",
+              details: {
+                card_number: cardNumber.replace(/\s/g, ""),
+                exp_month: parseInt(cardExpMonth, 10),
+                exp_year: parseInt(cardExpYear, 10),
+                cvc: cardCvc,
+              },
+              billing: { name: name.trim() },
+            },
+          },
+        }),
+      });
+      const pmJson = await pmRes.json();
+      if (!pmRes.ok) {
+        setError((pmJson.errors?.[0]?.detail as string | undefined) ?? "Card tokenization failed. Check your card details.");
+        return;
+      }
+      const pmId: string = pmJson.data?.id;
+      if (!pmId) { setError("Card tokenization failed."); return; }
+
+      const res = await fetch(`${API_URL}/public/checkout/pay/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          enrollment_session_id: enrollmentSessionId,
+          payment_method_type: "card",
+          payment_method_id: pmId,
+        }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setError((json as { error?: string }).error ?? "Payment failed. Please try again.");
+        return;
+      }
+      const json = await res.json();
+      const redirectUrl: string = json.data?.redirect_url;
+      if (redirectUrl) window.location.href = redirectUrl;
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setCardPaying(false);
+    }
+  }
+
   // ── Step 2b: PIN setup ────────────────────────────────────────────────────────
 
-  async function handlePinSetup(e: React.FormEvent) {
+  async function handlePinSetup(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     if (!/^\d{6}$/.test(pin)) { setError("PIN must be exactly 6 digits."); return; }
@@ -312,7 +427,7 @@ export default function CheckoutForm({
     }
   }
 
-  // ── Step 3: staff attribution → fire-and-forget → redeem prompt ──────────────
+  // ── Step 3: staff attribution ─────────────────────────────────────────────────
 
   function handleStaffAttributionSubmit() {
     if (selectedStaffId && enrollmentSessionId) {
@@ -466,12 +581,134 @@ export default function CheckoutForm({
     );
   }
 
+  if (step === "method-picker") {
+    return (
+      <div className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-lg font-extrabold text-[#001a18] mb-1" style={{ fontFamily: "var(--font-manrope)" }}>
+            Choose payment method
+          </h2>
+          <p className="text-sm text-[#5c706a]">Select how you&apos;d like to pay for your subscription.</p>
+        </div>
+
+        {error && <p className="text-red-600 text-sm font-medium" role="alert">{error}</p>}
+
+        <div className="flex flex-col gap-3">
+          {paymentMethods.map((method) => (
+            <button
+              key={method}
+              type="button"
+              onClick={() => handleMethodSelect(method)}
+              className="w-full flex items-center gap-3 px-4 py-4 rounded-xl border border-[#c8d9d3] bg-white text-[#001a18] font-semibold text-base hover:bg-[#f0f5f4] hover:border-[#142F2D] transition text-left"
+              style={{ fontFamily: "var(--font-manrope)" }}
+            >
+              {METHOD_LABELS[method] ?? method}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (step === "paying") {
+    if (selectedMethod === "card") {
+      return (
+        <form onSubmit={handleCardPay} className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-lg font-extrabold text-[#001a18] mb-1" style={{ fontFamily: "var(--font-manrope)" }}>
+              Card details
+            </h2>
+            <p className="text-sm text-[#5c706a]">Your card details are sent directly to PayMongo — never stored on our servers.</p>
+          </div>
+
+          <div>
+            <label htmlFor="card-number" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>Card number</label>
+            <input
+              id="card-number"
+              type="text"
+              inputMode="numeric"
+              placeholder="1234 5678 9012 3456"
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))}
+              maxLength={16}
+              className={inputClass}
+              required
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label htmlFor="card-exp-month" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>Exp. month</label>
+              <input
+                id="card-exp-month"
+                type="text"
+                inputMode="numeric"
+                placeholder="MM"
+                value={cardExpMonth}
+                onChange={(e) => setCardExpMonth(e.target.value.replace(/\D/g, "").slice(0, 2))}
+                maxLength={2}
+                className={inputClass}
+                required
+              />
+            </div>
+            <div className="flex-1">
+              <label htmlFor="card-exp-year" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>Exp. year</label>
+              <input
+                id="card-exp-year"
+                type="text"
+                inputMode="numeric"
+                placeholder="YYYY"
+                value={cardExpYear}
+                onChange={(e) => setCardExpYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                maxLength={4}
+                className={inputClass}
+                required
+              />
+            </div>
+            <div className="flex-1">
+              <label htmlFor="card-cvc" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>CVC</label>
+              <input
+                id="card-cvc"
+                type="text"
+                inputMode="numeric"
+                placeholder="123"
+                value={cardCvc}
+                onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                maxLength={4}
+                className={inputClass}
+                required
+              />
+            </div>
+          </div>
+
+          {error && <p className="text-red-600 text-sm font-medium" role="alert">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={cardPaying}
+            className="w-full bg-[#142F2D] text-white font-bold text-base py-3.5 rounded-xl hover:bg-[#1e4a47] transition disabled:opacity-60 flex items-center justify-center gap-2"
+            style={{ fontFamily: "var(--font-manrope)" }}
+          >
+            {cardPaying && <Spinner />}
+            {cardPaying ? "Processing…" : "Pay now"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setStep("method-picker"); setError(null); }}
+            className="w-full text-[#5c706a] text-sm font-medium py-2 hover:text-[#001a18] transition"
+          >
+            ← Back to payment methods
+          </button>
+        </form>
+      );
+    }
+
     return (
       <div className="flex flex-col items-center gap-5 py-8">
         <Spinner size="lg" />
         <p className="text-sm font-semibold text-[#001a18]" style={{ fontFamily: "var(--font-manrope)" }}>
-          Preparing your checkout…
+          Preparing your payment…
         </p>
         <p className="text-xs text-[#5c706a]">You&apos;ll be redirected to complete payment.</p>
       </div>
@@ -550,7 +787,6 @@ export default function CheckoutForm({
   if (step === "qr-success") {
     return (
       <div className="flex flex-col gap-4">
-        {/* Success banner */}
         <div className="flex items-center gap-3 bg-[#e8f4f0] border border-[#b8ddd1] rounded-2xl px-4 py-3">
           <div className="shrink-0 w-8 h-8 rounded-full bg-[#1a5c48] flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -565,7 +801,6 @@ export default function CheckoutForm({
           </div>
         </div>
 
-        {/* Staff picker */}
         <div>
           <p className="text-sm font-semibold text-[#001a18] mb-1" style={{ fontFamily: "var(--font-manrope)" }}>
             Who helped you today?
@@ -624,7 +859,6 @@ export default function CheckoutForm({
             );
           })}
 
-          {/* None option */}
           <button
             type="button"
             onClick={() => setSelectedStaffId(null)}
@@ -682,7 +916,6 @@ export default function CheckoutForm({
   if (step === "redeem-prompt") {
     return (
       <div className="flex flex-col items-center gap-6 py-2 text-center">
-        {/* Success icon */}
         <div className="w-16 h-16 rounded-full bg-[#e8f4f0] flex items-center justify-center shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a5c48" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <polyline points="20 6 9 17 4 12" />
@@ -789,34 +1022,7 @@ export default function CheckoutForm({
         </div>
       )}
 
-      {/* App store badges — re-enable when apps are live
-      <div className="flex flex-col gap-3 w-full">
-        <a
-          href="https://play.google.com/store/apps/details?id=com.getmemberry.app"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center justify-center"
-        >
-          <img
-            src="/images/google-play-badge.png"
-            alt="Get it on Google Play"
-            className="h-14 w-auto"
-          />
-        </a>
-        <a
-          href="https://apps.apple.com/app/memberry/id6746502022"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center justify-center"
-        >
-          <img
-            src="/images/app-store-badge.webp"
-            alt="Download on the App Store"
-            className="h-14 w-auto"
-          />
-        </a>
-      </div>
-      */}
+      {/* App store badges — re-enable when apps are live */}
       <p className="text-center text-[#5c706a] text-sm">
         📱 Our app is <span className="font-semibold text-[#1a5c48]">coming soon </span> on iOS &amp; Android.
       </p>
