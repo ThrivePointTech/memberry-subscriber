@@ -1,6 +1,13 @@
 "use client";
 
 import { useState, useTransition, useEffect, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import { captureEvent, getDistinctId } from "@/lib/analytics";
+
+function distinctIdHeader(): Record<string, string> {
+  const distinctId = getDistinctId();
+  return distinctId ? { "X-PostHog-Distinct-Id": distinctId } : {};
+}
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.getmemberry.com";
@@ -92,8 +99,18 @@ export default function CheckoutForm({
   const [cardCvc, setCardCvc] = useState("");
   const [cardPaying, setCardPaying] = useState(false);
   const [, startTransition] = useTransition();
+  const searchParams = useSearchParams();
 
   const fullPhone = `${PHONE_PREFIX}${phone.trim()}`;
+
+  // Shop pages with exactly one plan redirect straight here without ever
+  // rendering PlanCard, so plan_viewed has to be captured on arrival instead.
+  useEffect(() => {
+    if (searchParams.get("from") === "shop") {
+      captureEvent("plan_viewed", { merchant_id: merchantId, plan_id: planId });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── sessionStorage helpers ───────────────────────────────────────────────────
 
@@ -254,7 +271,7 @@ export default function CheckoutForm({
       try {
         const res = await fetch(`${API_URL}/public/checkout/session`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...distinctIdHeader() },
           body: JSON.stringify({
             plan_id: planId,
             phone: fullPhone,
@@ -300,7 +317,7 @@ export default function CheckoutForm({
         if (method === "gcash") {
           const res = await fetch(`${API_URL}/public/checkout/pay/gcash`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...distinctIdHeader() },
             body: JSON.stringify({ enrollment_session_id: enrollmentSessionId }),
           });
           if (!res.ok) {
@@ -316,7 +333,7 @@ export default function CheckoutForm({
         } else {
           const res = await fetch(`${API_URL}/public/checkout/pay/subscribe`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...distinctIdHeader() },
             body: JSON.stringify({ enrollment_session_id: enrollmentSessionId, payment_method_type: method }),
           });
           if (!res.ok) {
@@ -377,7 +394,7 @@ export default function CheckoutForm({
 
       const res = await fetch(`${API_URL}/public/checkout/pay/subscribe`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...distinctIdHeader() },
         body: JSON.stringify({
           enrollment_session_id: enrollmentSessionId,
           payment_method_type: "card",
