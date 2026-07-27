@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter_Tight } from "next/font/google";
+import AnalyticsProvider from "./AnalyticsProvider";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -31,7 +32,10 @@ export default function RootLayout({
       lang="en"
       className={`${spaceGrotesk.variable} ${interTight.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AnalyticsProvider />
+        {children}
+      </body>
     </html>
   );
 }
