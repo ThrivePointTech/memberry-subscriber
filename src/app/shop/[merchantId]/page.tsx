@@ -89,7 +89,7 @@ export default async function ShopPage({
   ]);
 
   if (!merchant) notFound();
-  if (plans.length === 1) redirect(`/checkout/${plans[0].id}`);
+  if (plans.length === 1) redirect(`/checkout/${plans[0].id}?from=shop`);
 
   return (
     <main className="min-h-screen bg-[#f7faf9] flex items-start justify-center pt-8 pb-24 px-4">
@@ -136,7 +136,7 @@ export default async function ShopPage({
         {plans.length > 0 ? (
           <div className="flex flex-col gap-4">
             {plans.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} />
+              <PlanCard key={plan.id} plan={plan} merchantId={merchant.id} />
             ))}
           </div>
         ) : (

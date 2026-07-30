@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { captureEvent } from "@/lib/analytics";
 
 interface PlanService {
   id: string;
@@ -47,7 +49,11 @@ function formatAllowance(type: string, amount: string | null, maxPerVisit: strin
   return null;
 }
 
-export default function PlanCard({ plan }: { plan: Plan }) {
+export default function PlanCard({ plan, merchantId }: { plan: Plan; merchantId: string }) {
+  useEffect(() => {
+    captureEvent("plan_viewed", { merchant_id: merchantId, plan_id: plan.id });
+  }, [plan.id, merchantId]);
+
   const allowance =
     plan.plan_services && plan.plan_services.length > 0
       ? formatServiceAllowance(plan.plan_services)
