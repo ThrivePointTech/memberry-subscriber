@@ -97,7 +97,7 @@ export default async function CheckoutPage({
         {/* Logo */}
         <div className="mb-6 flex justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/logo_full.jpeg" alt="Memberry" className="h-16 w-auto rounded-2xl" />
+          <img src="/images/logo_full.png" alt="Memberry" className="h-16 w-auto rounded-2xl" />
         </div>
 
         {/* Breadcrumb */}
