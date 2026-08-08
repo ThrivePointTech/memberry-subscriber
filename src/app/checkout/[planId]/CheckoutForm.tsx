@@ -379,7 +379,11 @@ export default function CheckoutForm({
                 exp_year: parseInt(cardExpYear, 10),
                 cvc: cardCvc,
               },
-              billing: { name: name.trim() },
+              billing: {
+                name: name.trim(),
+                ...(email.trim() ? { email: email.trim() } : {}),
+                phone: fullPhone,
+              },
             },
           },
         }),
