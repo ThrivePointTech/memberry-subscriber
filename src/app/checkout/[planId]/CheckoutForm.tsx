@@ -28,6 +28,14 @@ const PHONE_PREFIX = "+63";
 
 const labelClass = "block text-sm font-semibold text-[#001a18] mb-2";
 
+function formatCardNumber(digits: string): string {
+  return digits.replace(/(.{4})/g, "$1 ").trim();
+}
+
+function formatCardExpiry(digits: string): string {
+  return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
+}
+
 const STALE_MS = 30 * 60 * 1000;
 
 type Step = "info" | "method-picker" | "paying" | "setup-pin" | "qr-success" | "redeem-prompt" | "download";
@@ -104,8 +112,7 @@ export default function CheckoutForm({
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [cardNumber, setCardNumber] = useState("");
-  const [cardExpMonth, setCardExpMonth] = useState("");
-  const [cardExpYear, setCardExpYear] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvc, setCardCvc] = useState("");
   const [cardPaying, setCardPaying] = useState(false);
   const [, startTransition] = useTransition();
@@ -388,6 +395,8 @@ export default function CheckoutForm({
     if (!pmPublicKey) { setError("Card payments are not configured."); return; }
     setCardPaying(true);
     try {
+      const expMonth = parseInt(cardExpiry.slice(0, 2), 10);
+      const expYear = 2000 + parseInt(cardExpiry.slice(2, 4), 10);
       const pmRes = await fetch("https://api.paymongo.com/v1/payment_methods", {
         method: "POST",
         headers: {
@@ -399,9 +408,9 @@ export default function CheckoutForm({
             attributes: {
               type: "card",
               details: {
-                card_number: cardNumber.replace(/\s/g, ""),
-                exp_month: parseInt(cardExpMonth, 10),
-                exp_year: parseInt(cardExpYear, 10),
+                card_number: cardNumber,
+                exp_month: expMonth,
+                exp_year: expYear,
                 cvc: cardCvc,
               },
               billing: {
@@ -580,7 +589,7 @@ export default function CheckoutForm({
 
         <div>
           <label htmlFor="email" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>
-            Email for receipts <span className="font-normal text-[#9ab0a8]">(optional)</span>
+            Email for receipts <span className="font-normal text-[#9ab0a8]">(optional, required for card payments)</span>
           </label>
           <input
             id="email"
@@ -666,7 +675,13 @@ export default function CheckoutForm({
             <h2 className="text-lg font-extrabold text-[#001a18] mb-1" style={{ fontFamily: "var(--font-manrope)" }}>
               Card details
             </h2>
-            <p className="text-sm text-[#5c706a]">Your card details are sent directly to PayMongo — never stored on our servers.</p>
+            <div className="flex items-center gap-1.5 text-sm text-[#5c706a]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <span>Payments secured by PayMongo · PCI-DSS Level 1 compliant</span>
+            </div>
           </div>
 
           <div>
@@ -676,9 +691,9 @@ export default function CheckoutForm({
               type="text"
               inputMode="numeric"
               placeholder="1234 5678 9012 3456"
-              value={cardNumber}
+              value={formatCardNumber(cardNumber)}
               onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))}
-              maxLength={16}
+              maxLength={19}
               className={inputClass}
               required
             />
@@ -686,29 +701,15 @@ export default function CheckoutForm({
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label htmlFor="card-exp-month" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>Exp. month</label>
+              <label htmlFor="card-expiry" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>Expiry</label>
               <input
-                id="card-exp-month"
+                id="card-expiry"
                 type="text"
                 inputMode="numeric"
-                placeholder="MM"
-                value={cardExpMonth}
-                onChange={(e) => setCardExpMonth(e.target.value.replace(/\D/g, "").slice(0, 2))}
-                maxLength={2}
-                className={inputClass}
-                required
-              />
-            </div>
-            <div className="flex-1">
-              <label htmlFor="card-exp-year" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>Exp. year</label>
-              <input
-                id="card-exp-year"
-                type="text"
-                inputMode="numeric"
-                placeholder="YYYY"
-                value={cardExpYear}
-                onChange={(e) => setCardExpYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                maxLength={4}
+                placeholder="MM/YY"
+                value={formatCardExpiry(cardExpiry)}
+                onChange={(e) => setCardExpiry(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                maxLength={5}
                 className={inputClass}
                 required
               />
@@ -727,6 +728,20 @@ export default function CheckoutForm({
                 required
               />
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="card-email" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>Email for receipt</label>
+            <input
+              id="card-email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={inputClass}
+              required
+            />
           </div>
 
           {error && <p className="text-red-600 text-sm font-medium" role="alert">{error}</p>}
