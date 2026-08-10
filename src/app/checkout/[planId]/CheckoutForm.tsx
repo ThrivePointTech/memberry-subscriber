@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { captureEvent, getDistinctId } from "@/lib/analytics";
+import { STORAGE_VERSION, checkoutStorageKey, patchCheckoutStorage } from "@/lib/checkoutSession";
 
 function distinctIdHeader(): Record<string, string> {
   const distinctId = getDistinctId();
@@ -27,7 +28,6 @@ const PHONE_PREFIX = "+63";
 
 const labelClass = "block text-sm font-semibold text-[#001a18] mb-2";
 
-const STORAGE_VERSION = 1;
 const STALE_MS = 30 * 60 * 1000;
 
 type Step = "info" | "method-picker" | "paying" | "setup-pin" | "qr-success" | "redeem-prompt" | "download";
@@ -44,6 +44,17 @@ interface Staff {
   profile_picture_url: string | null;
 }
 
+async function fetchMerchantStaffs(merchantId: string): Promise<Staff[]> {
+  try {
+    const res = await fetch(`${API_URL}/public/checkout/staffs/${merchantId}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return (json.data as Staff[] | undefined) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 interface Subscription {
   id: string;
   allowance_type: "unlimited" | "count" | "weight_kg" | "loads" | null;
@@ -58,7 +69,6 @@ interface StoredCheckout {
   step: Exclude<Step, "info" | "method-picker" | "paying">;
   enrollmentSessionId: string | null;
   subscription: Subscription | null;
-  staffs: Staff[] | null;
   subscribedAtISO: string | null;
   savedAt: number;
 }
@@ -72,7 +82,7 @@ export default function CheckoutForm({
   merchantId: string;
   hasServices?: boolean;
 }) {
-  const storageKey = `memberry_checkout__${planId}`;
+  const storageKey = checkoutStorageKey(planId);
 
   const [recovering, setRecovering] = useState(true);
   const [step, setStep] = useState<Step>("info");
@@ -115,15 +125,26 @@ export default function CheckoutForm({
   // ── sessionStorage helpers ───────────────────────────────────────────────────
 
   function persistCheckout(patch: Partial<StoredCheckout>) {
-    try {
-      const raw = sessionStorage.getItem(storageKey);
-      const existing: Partial<StoredCheckout> = raw ? JSON.parse(raw) : {};
-      sessionStorage.setItem(storageKey, JSON.stringify({ ...existing, ...patch, savedAt: Date.now() }));
-    } catch { /* storage unavailable */ }
+    patchCheckoutStorage(planId, patch);
   }
 
   function clearCheckout() {
     try { sessionStorage.removeItem(storageKey); } catch { /* ignore */ }
+  }
+
+  // Fetches the merchant's staff before showing the "Who helped you today?"
+  // picker; skips straight to redeem-prompt when there's no staff to pick from
+  // (or the fetch fails), so a non-critical step never blocks a paid customer.
+  async function advanceToQrSuccess() {
+    const fetchedStaffs = await fetchMerchantStaffs(merchantId);
+    if (fetchedStaffs.length > 0) {
+      setStaffs(fetchedStaffs);
+      persistCheckout({ step: "qr-success" });
+      setStep("qr-success");
+    } else {
+      persistCheckout({ step: "redeem-prompt" });
+      setStep("redeem-prompt");
+    }
   }
 
   // ── Recovery on mount ────────────────────────────────────────────────────────
@@ -138,8 +159,14 @@ export default function CheckoutForm({
         if (
           parsed.version !== STORAGE_VERSION ||
           parsed.planId !== planId ||
-          Date.now() - parsed.savedAt > STALE_MS
+          Date.now() - parsed.savedAt > STALE_MS ||
+          !parsed.step ||
+          !parsed.name ||
+          !parsed.phone
         ) {
+          // Missing name/phone/step means the pre-redirect write never happened
+          // (e.g. the status page's handoff patched an empty/partial entry) —
+          // treat it the same as no stored state rather than resuming with holes.
           clearCheckout();
           setRecovering(false);
           return;
@@ -172,17 +199,14 @@ export default function CheckoutForm({
                 if (lj.data?.customer?.has_pin === true) {
                   setEnrollmentSessionId(stored.enrollmentSessionId);
                   setSubscription(stored.subscription);
-                  setStaffs(stored.staffs ?? []);
                   restoreSubscribedAt(stored.subscribedAtISO);
-                  persistCheckout({ step: "qr-success" });
-                  setStep("qr-success");
+                  await advanceToQrSuccess();
                   break;
                 }
               }
             } catch { /* fall through */ }
             setEnrollmentSessionId(stored.enrollmentSessionId);
             setSubscription(stored.subscription);
-            setStaffs(stored.staffs ?? []);
             restoreSubscribedAt(stored.subscribedAtISO);
             setStep("setup-pin");
             break;
@@ -190,9 +214,8 @@ export default function CheckoutForm({
           case "qr-success":
             setEnrollmentSessionId(stored.enrollmentSessionId);
             setSubscription(stored.subscription);
-            setStaffs(stored.staffs ?? []);
             restoreSubscribedAt(stored.subscribedAtISO);
-            setStep("qr-success");
+            await advanceToQrSuccess();
             break;
           case "redeem-prompt":
             if (!stored.subscription) {
@@ -329,6 +352,7 @@ export default function CheckoutForm({
           const json = await res.json();
           const redirectUrl: string = json.data?.redirect_url;
           if (!redirectUrl) { setError("No redirect URL returned."); setStep("method-picker"); return; }
+          persistCheckout({ name: name.trim(), phone, enrollmentSessionId });
           window.location.href = redirectUrl;
         } else {
           const res = await fetch(`${API_URL}/public/checkout/pay/subscribe`, {
@@ -345,6 +369,7 @@ export default function CheckoutForm({
           const json = await res.json();
           const redirectUrl: string = json.data?.redirect_url;
           if (!redirectUrl) { setError("No redirect URL returned."); setStep("method-picker"); return; }
+          persistCheckout({ name: name.trim(), phone, enrollmentSessionId });
           window.location.href = redirectUrl;
         }
       } catch {
@@ -412,7 +437,10 @@ export default function CheckoutForm({
       }
       const json = await res.json();
       const redirectUrl: string = json.data?.redirect_url;
-      if (redirectUrl) window.location.href = redirectUrl;
+      if (redirectUrl) {
+        persistCheckout({ name: name.trim(), phone, enrollmentSessionId });
+        window.location.href = redirectUrl;
+      }
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -439,8 +467,7 @@ export default function CheckoutForm({
         setError((json as { error?: string }).error ?? "Failed to save PIN. Please try again.");
         return;
       }
-      persistCheckout({ step: "qr-success" });
-      setStep("qr-success");
+      await advanceToQrSuccess();
     } catch {
       setError("Network error. Please try again.");
     } finally {

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
+import { patchCheckoutStorage } from "@/lib/checkoutSession";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.getmemberry.com";
@@ -84,7 +85,10 @@ export default function PaymentStatusPage() {
         if (status === "paid") {
           if (timerRef.current) clearInterval(timerRef.current);
           setPollStatus("paid");
-          if (!isRenewal) router.replace(`/checkout/${planId}/success`);
+          if (!isRenewal) {
+            patchCheckoutStorage(planId, { step: "setup-pin" });
+            router.replace(`/checkout/${planId}`);
+          }
         } else if (FAILED_STATUSES.has(status)) {
           if (timerRef.current) clearInterval(timerRef.current);
           setPollStatus("failed");
@@ -219,7 +223,7 @@ export default function PaymentStatusPage() {
                 Check your GCash or Maya app to confirm the payment. If it went through, your subscription will activate shortly.
               </p>
               <a
-                href={`/checkout/${planId}/success`}
+                href={`/checkout/${planId}`}
                 className="inline-block text-sm text-[#142F2D] font-semibold underline underline-offset-2"
               >
                 I already paid — check status
