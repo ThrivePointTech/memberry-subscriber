@@ -108,6 +108,7 @@ export default function CheckoutForm({
   const [error, setError] = useState<string | null>(null);
   const [hasExistingSub, setHasExistingSub] = useState(false);
   const [existingSubId, setExistingSubId] = useState<string | null>(null);
+  const [checkoutInProgress, setCheckoutInProgress] = useState(false);
   const [subscribedAt, setSubscribedAt] = useState<Date | null>(null);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
@@ -265,6 +266,7 @@ export default function CheckoutForm({
     setError(null);
     setHasExistingSub(false);
     setExistingSubId(null);
+    setCheckoutInProgress(false);
 
     const trimmedName = name.trim();
     if (!trimmedName) { setError("Please enter your name."); return; }
@@ -293,8 +295,12 @@ export default function CheckoutForm({
 
       const eligibilityJson = await eligibilityRes.json();
       if (!eligibilityJson.data?.eligible) {
-        setExistingSubId(eligibilityJson.data?.subscriptionId ?? null);
-        setHasExistingSub(true);
+        if (eligibilityJson.data?.retryAfterSeconds != null) {
+          setCheckoutInProgress(true);
+        } else {
+          setExistingSubId(eligibilityJson.data?.subscriptionId ?? null);
+          setHasExistingSub(true);
+        }
         return;
       }
 
@@ -615,6 +621,17 @@ export default function CheckoutForm({
               >
                 Redeem your subscription instead
               </a>
+            </p>
+          </div>
+        )}
+
+        {checkoutInProgress && (
+          <div className="rounded-xl border border-[#b8ddd1] bg-[#e8f4f0] px-4 py-3" role="alert">
+            <p className="text-sm font-semibold text-[#1a5c48]" style={{ fontFamily: "var(--font-manrope)" }}>
+              A checkout is already in progress for this plan.
+            </p>
+            <p className="text-xs text-[#2d7a5f] mt-0.5">
+              Please wait a moment and try again.
             </p>
           </div>
         )}
