@@ -269,6 +269,10 @@ export default function CheckoutForm({
     const trimmedName = name.trim();
     if (!trimmedName) { setError("Please enter your name."); return; }
     if (!phone.trim()) { setError("Please enter your phone number."); return; }
+    if (!/^9\d{9}$/.test(phone.trim())) {
+      setError("Please enter a valid PH mobile number (e.g. 917 123 4567).");
+      return;
+    }
     const trimmedEmail = email.trim();
     if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       setError("Please enter a valid email address, or leave it blank.");
