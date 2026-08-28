@@ -16,6 +16,8 @@ interface Merchant {
   id: string;
   name: string;
   profile_picture_url: string | null;
+  banner_url: string | null;
+  description: string | null;
 }
 
 interface PlanService {
@@ -35,6 +37,7 @@ interface Plan {
   max_per_visit: string | null;
   max_per_visit_unit: string | null;
   tags: string[] | null;
+  savings_label: string | null;
   status: string;
   plan_services?: PlanService[];
 }
@@ -92,49 +95,60 @@ export default async function ShopPage({
   if (plans.length === 1) redirect(`/checkout/${plans[0].id}?from=shop`);
 
   return (
-    <main className="min-h-screen bg-[#f7faf9] flex items-start justify-center pt-8 pb-24 px-4">
+    <main className="min-h-screen bg-[#f7faf9] flex items-start justify-center pt-4 pb-24 px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="mb-6 flex justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/logo_full.png" alt="Memberry" className="h-16 w-auto rounded-2xl" />
-        </div>
-
-        {/* Merchant header */}
-        <div className="mb-6 flex items-center gap-4">
-          {assetUrl(merchant.profile_picture_url) ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={assetUrl(merchant.profile_picture_url)!}
-              alt={merchant.name}
-              className="w-16 h-16 rounded-full object-cover ring-1 ring-[#e4ede9] shrink-0"
-            />
-          ) : (
-            <div
-              className="w-16 h-16 rounded-full bg-[#142F2D] text-white flex items-center justify-center text-xl font-bold shrink-0"
-              style={{ fontFamily: "var(--font-manrope)" }}
-            >
-              {merchant.name.trim()[0]?.toUpperCase() ?? "?"}
+        {/* Merchant header: banner with logo overlapping, both centered */}
+        <div className="mb-6 flex flex-col items-center text-center">
+          <div className="relative w-full mb-12">
+            <div className="h-32 w-full rounded-2xl overflow-hidden bg-[#142F2D]">
+              {assetUrl(merchant.banner_url) && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={assetUrl(merchant.banner_url)!}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
-          )}
-          <div>
+            <div className="absolute left-1/2 -bottom-8 -translate-x-1/2">
+              {assetUrl(merchant.profile_picture_url) ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={assetUrl(merchant.profile_picture_url)!}
+                  alt={merchant.name}
+                  className="w-16 h-16 rounded-full object-cover ring-4 ring-white shrink-0"
+                />
+              ) : (
+                <div
+                  className="w-16 h-16 rounded-full bg-[#142F2D] text-white flex items-center justify-center text-xl font-bold ring-4 ring-white shrink-0"
+                  style={{ fontFamily: "var(--font-manrope)" }}
+                >
+                  {merchant.name.trim()[0]?.toUpperCase() ?? "?"}
+                </div>
+              )}
+            </div>
+          </div>
+
           <h1
             className="text-[#001a18] text-2xl font-extrabold leading-tight"
             style={{ fontFamily: "var(--font-manrope)" }}
           >
             {merchant.name}
           </h1>
-          <p className="text-[#5c706a] text-sm mt-1">
-            {plans.length > 0
-              ? "Choose a membership plan to get started."
-              : "No plans available right now."}
-          </p>
-          </div>
+          {merchant.description?.trim() && (
+            <p className="text-[#5c706a] text-sm mt-1">{merchant.description.trim()}</p>
+          )}
         </div>
 
         {/* Plan list */}
         {plans.length > 0 ? (
           <div className="flex flex-col gap-4">
+            <h2
+              className="text-[#1a5c48] text-sm font-bold"
+              style={{ fontFamily: "var(--font-manrope)" }}
+            >
+              Choose your membership
+            </h2>
             {plans.map((plan) => (
               <PlanCard key={plan.id} plan={plan} merchantId={merchant.id} />
             ))}
@@ -202,7 +216,9 @@ export default async function ShopPage({
           </svg>
         </Link>
 
-        <p className="text-center text-[#9ab0a8] text-xs mt-6">Powered by Memberry</p>
+        <p className="text-center text-[#9ab0a8] text-xs mt-6">
+          Powered by <span className="font-bold text-[#1a5c48]">Memberry</span>
+        </p>
       </div>
     </main>
   );

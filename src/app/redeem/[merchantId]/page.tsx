@@ -115,7 +115,9 @@ export default async function RedeemPage({
 
         <RedeemForm merchantId={merchant.id} />
 
-        <p className="text-center text-[#9ab0a8] text-xs mt-8">Powered by Memberry</p>
+        <p className="text-center text-[#9ab0a8] text-xs mt-8">
+          Powered by <span className="font-bold text-[#1a5c48]">Memberry</span>
+        </p>
       </div>
     </main>
   );
