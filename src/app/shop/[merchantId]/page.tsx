@@ -95,7 +95,7 @@ export default async function ShopPage({
   if (plans.length === 1) redirect(`/checkout/${plans[0].id}?from=shop`);
 
   return (
-    <main className="min-h-screen bg-[#f7faf9] flex items-start justify-center pt-8 pb-24 px-4">
+    <main className="min-h-screen bg-[#f7faf9] flex items-start justify-center pt-4 pb-24 px-4">
       <div className="w-full max-w-md">
         {/* Merchant header: banner with logo overlapping, both centered */}
         <div className="mb-6 flex flex-col items-center text-center">

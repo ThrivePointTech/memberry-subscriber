@@ -1,6 +1,6 @@
 export default function ShopLoading() {
   return (
-    <main className="min-h-screen bg-[#f7faf9] flex items-start justify-center pt-8 pb-24 px-4">
+    <main className="min-h-screen bg-[#f7faf9] flex items-start justify-center pt-4 pb-24 px-4">
       <div className="w-full max-w-md">
         {/* Merchant header skeleton: banner with overlapping logo, both centered */}
         <div className="mb-6 flex flex-col items-center text-center">
