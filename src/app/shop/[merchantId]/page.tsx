@@ -17,7 +17,7 @@ interface Merchant {
   name: string;
   profile_picture_url: string | null;
   banner_url: string | null;
-  short_description: string | null;
+  description: string | null;
 }
 
 interface PlanService {
@@ -135,8 +135,8 @@ export default async function ShopPage({
           >
             {merchant.name}
           </h1>
-          {merchant.short_description?.trim() && (
-            <p className="text-[#5c706a] text-sm mt-1">{merchant.short_description.trim()}</p>
+          {merchant.description?.trim() && (
+            <p className="text-[#5c706a] text-sm mt-1">{merchant.description.trim()}</p>
           )}
         </div>
 

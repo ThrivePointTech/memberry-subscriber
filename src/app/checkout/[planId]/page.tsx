@@ -9,6 +9,7 @@ const API_URL = process.env.API_BASE_URL ?? "https://api.getmemberry.com";
 interface PlanService {
   id: string;
   service_name: string;
+  service_icon?: string | null;
   allowance_count: number | null;
 }
 
@@ -83,21 +84,27 @@ function ServiceList({ services }: { services: PlanService[] }) {
     <div className="flex flex-col gap-1.5 mt-4">
       {visible.map((service) => (
         <div key={service.id} className="flex items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-[#1a5c48] shrink-0"
-            aria-hidden="true"
-          >
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
+          {service.service_icon?.trim() ? (
+            <span className="w-3.5 text-center text-sm leading-none shrink-0" aria-hidden="true">
+              {service.service_icon.trim()}
+            </span>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-[#1a5c48] shrink-0"
+              aria-hidden="true"
+            >
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          )}
           <span className="flex-1 text-[#414847] text-sm truncate">{service.service_name}</span>
           <span className="text-[#5c706a] text-xs font-medium shrink-0">
             {service.allowance_count == null ? "Unlimited" : `×${service.allowance_count}`}

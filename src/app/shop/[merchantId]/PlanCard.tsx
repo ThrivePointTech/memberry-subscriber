@@ -8,6 +8,7 @@ import SavingsBadge from "@/components/SavingsBadge";
 interface PlanService {
   id: string;
   service_name: string;
+  service_icon?: string | null;
   allowance_count: number | null;
 }
 
@@ -45,42 +46,38 @@ function formatAllowance(type: string, amount: string | null, maxPerVisit: strin
   return null;
 }
 
-const SERVICE_LIST_MAX_VISIBLE = 3;
-
 function ServiceList({ services }: { services: PlanService[] }) {
-  const visible = services.slice(0, SERVICE_LIST_MAX_VISIBLE);
-  const overflow = services.length - visible.length;
-
   return (
     <div className="flex flex-col gap-1.5 mb-4">
-      {visible.map((service) => (
+      {services.map((service) => (
         <div key={service.id} className="flex items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-[#1a5c48] shrink-0"
-            aria-hidden="true"
-          >
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
+          {service.service_icon?.trim() ? (
+            <span className="w-3.5 text-center text-sm leading-none shrink-0" aria-hidden="true">
+              {service.service_icon.trim()}
+            </span>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-[#1a5c48] shrink-0"
+              aria-hidden="true"
+            >
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          )}
           <span className="flex-1 text-[#414847] text-sm truncate">{service.service_name}</span>
           <span className="text-[#5c706a] text-xs font-medium shrink-0">
             {service.allowance_count == null ? "Unlimited" : `×${service.allowance_count}`}
           </span>
         </div>
       ))}
-      {overflow > 0 && (
-        <span className="text-[#5c706a] text-xs pl-6">
-          +{overflow} more service{overflow === 1 ? "" : "s"}
-        </span>
-      )}
     </div>
   );
 }
