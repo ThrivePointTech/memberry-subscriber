@@ -28,3 +28,15 @@ export function getDistinctId(): string | null {
   if (!initialized) return null;
   return posthog.get_distinct_id() ?? null;
 }
+
+export function isFeatureEnabled(flagKey: string): boolean {
+  if (!initialized) return false;
+  return posthog.isFeatureEnabled(flagKey) ?? false;
+}
+
+// Feature flags load asynchronously after init; callback fires once they're ready
+// and again on any later reload (e.g. after identify()).
+export function onFeatureFlags(callback: () => void): void {
+  if (!initialized) return;
+  posthog.onFeatureFlags(callback);
+}
