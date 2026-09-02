@@ -4,6 +4,7 @@ import posthog from "posthog-js";
 
 const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY ?? "";
 const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
+const APP_ENV = process.env.NEXT_PUBLIC_APP_ENV ?? "development";
 
 let initialized = false;
 
@@ -15,6 +16,9 @@ export function initAnalytics(): void {
     capture_pageview: false,
   });
   initialized = true;
+  // Lets flags target staging vs. production independently, since API keys
+  // aren't split per env.
+  posthog.setPersonPropertiesForFlags({ environment: APP_ENV }, false);
 }
 
 export function captureEvent(event: string, properties?: Record<string, unknown>): void {
