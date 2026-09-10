@@ -50,5 +50,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.apiSession = token.apiSession
       return session
     },
+    async redirect({ baseUrl }) {
+      return `${baseUrl}/auth/bridge`
+    },
   },
 })
