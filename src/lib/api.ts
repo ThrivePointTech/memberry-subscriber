@@ -1,4 +1,4 @@
-import { getAccessToken, getRefreshToken, setAccessToken, clearSession } from './session'
+import { getAccessToken, getRefreshToken, setRefreshedTokens, clearSession } from './session'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
 
@@ -14,8 +14,10 @@ async function refreshAccessToken(): Promise<string | null> {
     await clearSession()
     return null
   }
-  const { data } = (await res.json()) as { data: { access_token: string } }
-  await setAccessToken(data.access_token)
+  // Both tokens are rotated on every refresh — persist both, not just the
+  // access token, or the next refresh presents an already-revoked token.
+  const { data } = (await res.json()) as { data: { access_token: string; refresh_token: string } }
+  await setRefreshedTokens(data.access_token, data.refresh_token)
   return data.access_token
 }
 

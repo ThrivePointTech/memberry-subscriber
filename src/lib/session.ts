@@ -45,6 +45,24 @@ export async function setAccessToken(accessToken: string): Promise<void> {
   })
 }
 
+// memberry-api's refresh endpoint rotates the refresh token on every call
+// and revokes the one just presented (see user-session-auth spec) — a
+// refresh response's rotated pair MUST both be persisted, or the next
+// refresh attempt presents an already-revoked token and memberry-api's
+// reuse-detection revokes the whole token family, forcing an unplanned
+// full re-login well before the nominal 30-day session length.
+export async function setRefreshedTokens(accessToken: string, refreshToken: string): Promise<void> {
+  const store = await cookies()
+  const common = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    path: '/',
+  }
+  store.set(ACCESS_COOKIE, accessToken, { ...common, maxAge: 60 * 15 })
+  store.set(REFRESH_COOKIE, refreshToken, { ...common, maxAge: 60 * 60 * 24 * 30 })
+}
+
 export async function clearSession(): Promise<void> {
   const store = await cookies()
   store.delete(ACCESS_COOKIE)

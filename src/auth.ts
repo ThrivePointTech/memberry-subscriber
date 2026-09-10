@@ -50,6 +50,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.apiSession = token.apiSession
       return session
     },
+    // NOTE: this unconditionally sends every NextAuth redirect (including a
+    // future signOut()) through the bridge. No sign-out UI exists yet
+    // (Tasks 6/7) — when one is added, scope this so signOut() doesn't also
+    // bounce through /auth/bridge (which will find no session and redirect
+    // to /login?error=sso_failed, a misleading state for someone who just
+    // logged out on purpose).
     async redirect({ baseUrl }) {
       return `${baseUrl}/auth/bridge`
     },
