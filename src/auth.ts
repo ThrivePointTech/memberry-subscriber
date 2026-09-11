@@ -2,7 +2,12 @@ import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 import Facebook from 'next-auth/providers/facebook'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
+// Server-side only, so use `API_BASE_URL`: it is a real runtime lookup (the
+// pattern every Server Component in this repo already uses), while
+// `NEXT_PUBLIC_*` is inlined at build time and the Dockerfile only declares it
+// as a build ARG. No localhost fallback — silently pointing a production
+// container at nothing is worse than pointing it at the real API.
+const API_URL = process.env.API_BASE_URL ?? 'https://api.getmemberry.com'
 
 declare module 'next-auth' {
   interface Session {
@@ -34,6 +39,11 @@ async function exchangeForApiSession(path: '/auth/google/verify' | '/auth/facebo
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // This app deploys as a standalone `node server.js` image behind a reverse
+  // proxy (not Vercel), where Auth.js v5 otherwise rejects the forwarded Host
+  // with `UntrustedHost`. `AUTH_TRUST_HOST=true` does the same thing via env;
+  // setting it here means a deploy can't forget it.
+  trustHost: true,
   providers: [Google, Facebook],
   session: { strategy: 'jwt' },
   pages: { signIn: '/login' },
@@ -50,13 +60,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.apiSession = token.apiSession
       return session
     },
-    // NOTE: this unconditionally sends every NextAuth redirect (including a
-    // future signOut()) through the bridge. No sign-out UI exists yet
-    // (Tasks 6/7) — when one is added, scope this so signOut() doesn't also
-    // bounce through /auth/bridge (which will find no session and redirect
-    // to /login?error=sso_failed, a misleading state for someone who just
-    // logged out on purpose).
-    async redirect({ baseUrl }) {
+    // Preserve the app's own destination. The login page passes
+    // `redirectTo: '/auth/bridge?redirect=<path>'` into signIn(), which arrives
+    // here as `url` — overwriting it would drop the query string and strand
+    // every sign-in on `/`. Only genuinely foreign URLs fall back to the
+    // bridge, which is also what an off-site callback should land on.
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith(baseUrl)) return url
+      if (url.startsWith('/')) return `${baseUrl}${url}`
       return `${baseUrl}/auth/bridge`
     },
   },
