@@ -80,6 +80,7 @@ interface StoredCheckout {
   subscription: Subscription | null;
   subscribedAtISO: string | null;
   savedAt: number;
+  isAuthenticated?: boolean;
 }
 
 export default function CheckoutForm({
@@ -169,12 +170,13 @@ export default function CheckoutForm({
           parsed.planId !== planId ||
           Date.now() - parsed.savedAt > STALE_MS ||
           !parsed.step ||
-          !parsed.name ||
-          !parsed.phone
+          !((parsed.name && parsed.phone) || parsed.isAuthenticated === true)
         ) {
           // Missing name/phone/step means the pre-redirect write never happened
           // (e.g. the status page's handoff patched an empty/partial entry) —
           // treat it the same as no stored state rather than resuming with holes.
+          // An authenticated entry is valid without name/phone since the session
+          // cookie (not the phone+PIN device-recovery flow) proves identity.
           clearCheckout();
           setRecovering(false);
           return;
@@ -278,6 +280,7 @@ export default function CheckoutForm({
         }>("/public/checkout/session/authenticated", { plan_id: planId });
         setEnrollmentSessionId(enrollment_session_id);
         setPaymentMethods(payment_methods ?? ["gcash"]);
+        persistCheckout({ enrollmentSessionId: enrollment_session_id, isAuthenticated: true });
         setStep("method-picker");
       } catch {
         setError("Something went wrong. Please try again.");

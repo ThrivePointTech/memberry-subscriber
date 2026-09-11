@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
-import { patchCheckoutStorage } from "@/lib/checkoutSession";
+import { checkoutStorageKey, patchCheckoutStorage } from "@/lib/checkoutSession";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.getmemberry.com";
@@ -86,7 +86,18 @@ export default function PaymentStatusPage() {
           if (timerRef.current) clearInterval(timerRef.current);
           setPollStatus("paid");
           if (!isRenewal) {
-            patchCheckoutStorage(planId, { step: "setup-pin" });
+            // Authenticated (Google/Facebook) customers already proved identity
+            // via their session cookie — skip PIN setup and go straight to the
+            // qr-success step, which already handles a null subscription.
+            let nextStep: "setup-pin" | "qr-success" = "setup-pin";
+            try {
+              const raw = sessionStorage.getItem(checkoutStorageKey(planId));
+              if (raw) {
+                const parsed = JSON.parse(raw) as { isAuthenticated?: boolean };
+                if (parsed.isAuthenticated === true) nextStep = "qr-success";
+              }
+            } catch { /* fall back to setup-pin */ }
+            patchCheckoutStorage(planId, { step: nextStep });
             router.replace(`/checkout/${planId}`);
           }
         } else if (FAILED_STATUSES.has(status)) {
