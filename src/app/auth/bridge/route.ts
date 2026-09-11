@@ -14,6 +14,9 @@ import { setSession } from '@/lib/session'
 // discarded in favour of the home page.
 function safeRedirectPath(raw: string | null): string {
   if (!raw) return '/'
+  // Control characters (tab/newline/NUL) are stripped by URL parsers and can
+  // be used to hide a `//` or a scheme, so reject them outright.
+  if (/[\u0000-\u001F\u007F]/.test(raw)) return '/'
   if (!raw.startsWith('/')) return '/'
   if (raw.startsWith('//') || raw.startsWith('/\\')) return '/'
   return raw

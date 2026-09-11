@@ -65,9 +65,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // here as `url` — overwriting it would drop the query string and strand
     // every sign-in on `/`. Only genuinely foreign URLs fall back to the
     // bridge, which is also what an off-site callback should land on.
+    // Origins are compared parsed, not by string prefix: `baseUrl` is a bare
+    // origin, so `url.startsWith(baseUrl)` would also accept
+    // `https://<app>.evil.example/...`.
     async redirect({ url, baseUrl }) {
-      if (url.startsWith(baseUrl)) return url
-      if (url.startsWith('/')) return `${baseUrl}${url}`
+      if (url.startsWith('/') && !url.startsWith('//')) return `${baseUrl}${url}`
+      try {
+        if (new URL(url).origin === new URL(baseUrl).origin) return url
+      } catch {
+        /* not a parseable URL — fall through */
+      }
       return `${baseUrl}/auth/bridge`
     },
   },
