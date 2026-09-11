@@ -1,6 +1,31 @@
+// This module reads the httpOnly access/refresh cookies. If it is ever pulled
+// into a client bundle, session.ts's `'use server'` cookie readers become
+// client-callable Server Actions and both tokens end up in browser JavaScript —
+// exactly the leak the httpOnly cookie design exists to prevent. `server-only`
+// turns that mistake into a loud build failure instead of a silent leak.
+import 'server-only'
+
 import { getAccessToken, getRefreshToken, setRefreshedTokens, clearSession } from './session'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
+// Server-only code, so use the runtime-readable `API_BASE_URL` (the same var
+// every Server Component in this repo uses) — `NEXT_PUBLIC_*` vars are inlined
+// at build time and are not reliably readable at container runtime, and a
+// localhost fallback in production would be a silent misconfiguration.
+const API_URL = process.env.API_BASE_URL ?? 'https://api.getmemberry.com'
+
+/**
+ * Carries memberry-api's HTTP status alongside its message so callers can
+ * branch on it (401 → re-prompt login, 409 → duplicate subscription, …).
+ */
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
 
 async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = await getRefreshToken()
@@ -51,8 +76,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(body?.message ?? `API error ${res.status}`)
+    // memberry-api's failure envelope is `{ status, message, error }`
+    // (src/lib/response.ts `fail()`), so `message` is the human-readable text.
+    const body = (await res.json().catch(() => ({}))) as { message?: string; error?: string }
+    throw new ApiError(body?.message ?? body?.error ?? `API error ${res.status}`, res.status)
   }
 
   const json = await res.json()
@@ -60,6 +87,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body: unknown) => request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  get: <T>(path: string, headers?: Record<string, string>) => request<T>(path, { headers }),
+  post: <T>(path: string, body: unknown, headers?: Record<string, string>) =>
+    request<T>(path, { method: 'POST', body: JSON.stringify(body), headers }),
 }

@@ -1,4 +1,11 @@
-'use server'
+// `server-only`, NOT `'use server'`. Every export here reads or writes the
+// httpOnly session cookies; under `'use server'` they would each become a
+// client-invocable Server Action the moment any client module imported this
+// file, handing the raw access token and the 30-day refresh token to browser
+// JavaScript. Nothing here needs to be callable from the client — the callers
+// are Route Handlers, Server Components and Server Actions — so the safer
+// directive is the one that makes a client import fail the build.
+import 'server-only'
 
 import { cookies } from 'next/headers'
 
@@ -32,17 +39,6 @@ export async function setSession(session: { access_token: string; refresh_token:
   store.set(ACCESS_COOKIE, session.access_token, { ...common, maxAge: 60 * 15 })
   store.set(REFRESH_COOKIE, session.refresh_token, { ...common, maxAge: 60 * 60 * 24 * 30 })
   store.set(CUSTOMER_COOKIE, session.customer_id, { ...common, maxAge: 60 * 60 * 24 * 30 })
-}
-
-export async function setAccessToken(accessToken: string): Promise<void> {
-  const store = await cookies()
-  store.set(ACCESS_COOKIE, accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 15,
-    path: '/',
-  })
 }
 
 // memberry-api's refresh endpoint rotates the refresh token on every call

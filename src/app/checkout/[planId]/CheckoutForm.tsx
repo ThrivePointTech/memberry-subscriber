@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { captureEvent, getDistinctId } from "@/lib/analytics";
 import { STORAGE_VERSION, checkoutStorageKey, patchCheckoutStorage } from "@/lib/checkoutSession";
-import { api } from "@/lib/api";
+import { createAuthenticatedCheckoutSession } from "./actions";
 
 function distinctIdHeader(): Record<string, string> {
   const distinctId = getDistinctId();
@@ -263,28 +263,43 @@ export default function CheckoutForm({
 
   // ── Step 1: confirm authenticated identity → createAuthenticatedSession → method-picker ──
 
+  function redirectToLogin() {
+    window.location.href = `/login?redirect=${encodeURIComponent(`/checkout/${planId}`)}`;
+  }
+
   function handleInfoSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
     if (!isAuthenticated) {
-      window.location.href = `/login?redirect=${encodeURIComponent(`/checkout/${planId}`)}`;
+      redirectToLogin();
       return;
     }
 
     startTransition(async () => {
-      try {
-        const { enrollment_session_id, payment_methods } = await api.post<{
-          enrollment_session_id: string;
-          payment_methods: string[];
-        }>("/public/checkout/session/authenticated", { plan_id: planId });
-        setEnrollmentSessionId(enrollment_session_id);
-        setPaymentMethods(payment_methods ?? ["gcash"]);
-        persistCheckout({ enrollmentSessionId: enrollment_session_id, isAuthenticated: true });
-        setStep("method-picker");
-      } catch {
-        setError("Something went wrong. Please try again.");
+      // The session is created by a Server Action: the memberry-api access and
+      // refresh tokens live in httpOnly cookies read only on the server, and
+      // only the enrollment session id / payment methods come back here.
+      const result = await createAuthenticatedCheckoutSession(planId, getDistinctId() ?? undefined);
+
+      if (!result.ok) {
+        // `isAuthenticated` is only the *presence* of a 30-day cookie at page
+        // render, not proof of a live session. If the session turns out to be
+        // expired or revoked, re-prompt sign-in rather than dead-ending on a
+        // generic error the customer can only retry forever.
+        if (result.code === "auth") {
+          setError(result.message);
+          redirectToLogin();
+          return;
+        }
+        setError(result.message);
+        return;
       }
+
+      setEnrollmentSessionId(result.enrollmentSessionId);
+      setPaymentMethods(result.paymentMethods);
+      persistCheckout({ enrollmentSessionId: result.enrollmentSessionId, isAuthenticated: true });
+      setStep("method-picker");
     });
   }
 
@@ -355,6 +370,16 @@ export default function CheckoutForm({
     try {
       const expMonth = parseInt(cardExpiry.slice(0, 2), 10);
       const expYear = 2000 + parseInt(cardExpiry.slice(2, 4), 10);
+      // Authenticated checkout never renders the name/phone fields, so both are
+      // empty on that path (`""` and a bare `+63` prefix). Send only the fields
+      // that actually carry a value — placeholder junk in PayMongo's billing
+      // block ends up on receipts and in dispute records. `billing` itself is
+      // optional, so drop it entirely when nothing is filled in.
+      const billing: Record<string, string> = {
+        ...(name.trim() ? { name: name.trim() } : {}),
+        ...(email.trim() ? { email: email.trim() } : {}),
+        ...(phone.trim() ? { phone: fullPhone } : {}),
+      };
       const pmRes = await fetch("https://api.paymongo.com/v1/payment_methods", {
         method: "POST",
         headers: {
@@ -371,11 +396,7 @@ export default function CheckoutForm({
                 exp_year: expYear,
                 cvc: cardCvc,
               },
-              billing: {
-                name: name.trim(),
-                ...(email.trim() ? { email: email.trim() } : {}),
-                phone: fullPhone,
-              },
+              ...(Object.keys(billing).length > 0 ? { billing } : {}),
             },
           },
         }),
