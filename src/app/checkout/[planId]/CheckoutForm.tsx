@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { captureEvent, getDistinctId } from "@/lib/analytics";
 import { STORAGE_VERSION, checkoutStorageKey, patchCheckoutStorage } from "@/lib/checkoutSession";
+import { api } from "@/lib/api";
 
 function distinctIdHeader(): Record<string, string> {
   const distinctId = getDistinctId();
@@ -85,10 +86,12 @@ export default function CheckoutForm({
   planId,
   merchantId,
   hasServices = false,
+  isAuthenticated = false,
 }: {
   planId: string;
   merchantId: string;
   hasServices?: boolean;
+  isAuthenticated?: boolean;
 }) {
   const storageKey = checkoutStorageKey(planId);
 
@@ -106,8 +109,6 @@ export default function CheckoutForm({
   const [pinLoading, setPinLoading] = useState(false);
   const [redeeming, setRedeeming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasExistingSub, setHasExistingSub] = useState(false);
-  const [existingSubId, setExistingSubId] = useState<string | null>(null);
   const [subscribedAt, setSubscribedAt] = useState<Date | null>(null);
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
@@ -258,78 +259,28 @@ export default function CheckoutForm({
     if (step === "download") clearCheckout();
   }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Step 1: collect name + phone → createSession → method-picker ─────────────
+  // ── Step 1: confirm authenticated identity → createAuthenticatedSession → method-picker ──
 
   function handleInfoSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    setHasExistingSub(false);
-    setExistingSubId(null);
 
-    const trimmedName = name.trim();
-    if (!trimmedName) { setError("Please enter your name."); return; }
-    if (!phone.trim()) { setError("Please enter your phone number."); return; }
-    if (!/^9\d{9}$/.test(phone.trim())) {
-      setError("Please enter a valid PH mobile number (e.g. 917 123 4567).");
-      return;
-    }
-    const trimmedEmail = email.trim();
-    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setError("Please enter a valid email address, or leave it blank.");
+    if (!isAuthenticated) {
+      window.location.href = `/login?redirect=${encodeURIComponent(`/checkout/${planId}`)}`;
       return;
     }
 
     startTransition(async () => {
-      let eligibilityRes: Response;
       try {
-        eligibilityRes = await fetch(
-          `${API_URL}/public/plans/${planId}/eligibility?phone=${encodeURIComponent(fullPhone)}`
-        );
-      } catch {
-        setError("Something went wrong. Please try again.");
-        return;
-      }
-
-      if (!eligibilityRes.ok) {
-        setError("Something went wrong. Please try again.");
-        return;
-      }
-
-      const eligibilityJson = await eligibilityRes.json();
-      if (!eligibilityJson.data?.eligible) {
-        setExistingSubId(eligibilityJson.data?.subscriptionId ?? null);
-        setHasExistingSub(true);
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API_URL}/public/checkout/session`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...distinctIdHeader() },
-          body: JSON.stringify({
-            plan_id: planId,
-            phone: fullPhone,
-            customer_name: trimmedName,
-            ...(trimmedEmail ? { email: trimmedEmail } : {}),
-          }),
-        });
-        if (!res.ok) {
-          const json = await res.json().catch(() => ({}));
-          setError((json as { error?: string }).error ?? "Failed to start checkout. Please try again.");
-          return;
-        }
-        const json = await res.json();
-        const sessionId: string = json.data?.enrollment_session_id;
-        const methods: string[] = json.data?.payment_methods ?? ["gcash"];
-        if (!sessionId) {
-          setError("Failed to create checkout session. Please try again.");
-          return;
-        }
-        setEnrollmentSessionId(sessionId);
-        setPaymentMethods(methods);
+        const { enrollment_session_id, payment_methods } = await api.post<{
+          enrollment_session_id: string;
+          payment_methods: string[];
+        }>("/public/checkout/session/authenticated", { plan_id: planId });
+        setEnrollmentSessionId(enrollment_session_id);
+        setPaymentMethods(payment_methods ?? ["gcash"]);
         setStep("method-picker");
       } catch {
-        setError("Network error. Please try again.");
+        setError("Something went wrong. Please try again.");
       }
     });
   }
@@ -548,80 +499,11 @@ export default function CheckoutForm({
   if (step === "info") {
     return (
       <form onSubmit={handleInfoSubmit} className="flex flex-col gap-4">
-        <div>
-          <label htmlFor="name" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>
-            Your name
-          </label>
-          <input
-            id="name"
-            type="text"
-            autoComplete="name"
-            placeholder="Juan Dela Cruz"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className={inputClass}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="phone" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>
-            Phone number
-          </label>
-          <div className="flex rounded-xl border border-[#c8d9d3] bg-white focus-within:ring-2 focus-within:ring-[#142F2D] overflow-hidden transition">
-            <span className="flex items-center px-4 text-[#001a18] text-base font-medium bg-[#f0f5f4] border-r border-[#c8d9d3] select-none shrink-0">
-              +63
-            </span>
-            <input
-              id="phone"
-              type="tel"
-              inputMode="numeric"
-              autoComplete="tel-national"
-              placeholder="9XX XXX XXXX"
-              value={phone}
-              onChange={(e) => {
-                const digits = e.target.value.replace(/\D/g, "").replace(/^0+/, "");
-                setPhone(digits);
-              }}
-              maxLength={10}
-              className="flex-1 px-4 py-3 bg-white text-[#001a18] text-base placeholder:text-[#9ab0a8] focus:outline-none disabled:opacity-50"
-            />
-          </div>
-          <p className="text-[#5c706a] text-xs mt-2">
-            We&apos;ll use this to connect your payment to your Memberry profile.
-          </p>
-        </div>
-
-        <div>
-          <label htmlFor="email" className={labelClass} style={{ fontFamily: "var(--font-manrope)" }}>
-            Email for receipts <span className="font-normal text-[#9ab0a8]">(optional, required for card payments)</span>
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={inputClass}
-          />
-        </div>
-
-        {hasExistingSub && (
-          <div className="rounded-xl border border-[#b8ddd1] bg-[#e8f4f0] px-4 py-3" role="alert">
-            <p className="text-sm font-semibold text-[#1a5c48]" style={{ fontFamily: "var(--font-manrope)" }}>
-              You already have an active subscription to this plan.
-            </p>
-            <p className="text-xs text-[#2d7a5f] mt-0.5">
-              Want to use it?{" "}
-              <a
-                href={existingSubId ? `/redeem/${merchantId}?sub=${existingSubId}` : `/redeem/${merchantId}`}
-                className="underline font-semibold hover:text-[#1a5c48]"
-              >
-                Redeem your subscription instead
-              </a>
-            </p>
-          </div>
-        )}
+        <p className="text-sm text-[#5c706a]">
+          {isAuthenticated
+            ? "You're signed in — continue to choose a payment method."
+            : "Sign in with Google or Facebook to continue."}
+        </p>
 
         {error && (
           <p className="text-red-600 text-sm font-medium" role="alert">{error}</p>

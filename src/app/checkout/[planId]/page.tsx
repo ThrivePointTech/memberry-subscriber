@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import CheckoutForm from "./CheckoutForm";
 import SavingsBadge from "@/components/SavingsBadge";
+import { getCustomerId } from "@/lib/session";
 
 const API_URL = process.env.API_BASE_URL ?? "https://api.getmemberry.com";
 
@@ -129,6 +130,7 @@ export default async function CheckoutPage({
   const plan = await fetchPlan(planId);
   if (!plan) notFound();
 
+  const isAuthenticated = Boolean(await getCustomerId());
   const hasServices = !!plan.plan_services && plan.plan_services.length > 0;
   const allowance = hasServices
     ? null
@@ -217,6 +219,7 @@ export default async function CheckoutPage({
           planId={plan.id}
           merchantId={plan.merchant_id}
           hasServices={!!plan.plan_services && plan.plan_services.length > 0}
+          isAuthenticated={isAuthenticated}
         />
 
         {/* Already a member — redeem link */}
